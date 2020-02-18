@@ -1,0 +1,125 @@
+This is the help file for the Mandelbrot creator.
+It is not recommended to modify it.
+
+<SCOPE>
+Printing help for keyword 'scope'
+
+'scope' allows to change current scope.
+Unlike local scoping it is not limited to the current command
+
+Syntax:
+    | scope ?
+        print help for 'scope'
+    | scope {scope}
+        change scope to {scope}
+    | scope .
+        reset scope (equivalent to 'scope nil')
+<END>
+
+<MAP>
+Printing help for keyword 'map'
+
+'map' is used to choose the color scheme to be used.
+All color schemes are used in the same way:
+one point is colored with the corresponding RGB values modulus
+the color map length. Any number of loops may show depending on
+pixel resolution.
+Color 0 is to be used for points that do not diverge.
+
+Syntax:
+    | ?
+        print help for 'map'
+    | .
+        reset settings for scope 'map'
+        (equivalent to '0')
+    | :{int}
+        select map number {int}
+    | ls :{int}
+        show {int}'th page, default is 0.
+<END>
+
+<SAVE>
+Printing help for keyword 'save'
+
+To avoid having to recreate all settings, files can be created
+in order to restore environment to a previously set state.
+
+Syntax:
+    | ?
+        print help for 'save'
+    | #
+        hash new unique filename and save settings.
+    | '{str}
+        create file named {str}, and use it to save settings
+    | ls :{int}
+        show {int}'th page, default is 0.
+<END>
+
+<LOAD>
+Printing help for keyword 'load'
+
+Open any settings file that has been created with 'save'
+
+Syntax:
+    | ?
+        print help for 'load'
+    | :{int}
+        load {int}'th file
+    | ls :{int}
+        show {int}'th page, default is 0.
+<END>
+
+<REC>
+Printing help for keyword 'rec'
+
+Change view rectangle.
+
+Syntax:
+    | ?
+        show help for 'rec'
+    | .
+        reset settings for 'rec'
+    | ls
+        show current settings
+    | ({selector}*{indicator}*{quantifier}*)*
+        apply changes
+<END>
+
+<MAKE>
+Printing help for keyword 'make'
+
+Create image of the Mandelbrot set.
+
+Syntax:
+    | ?
+        show help for 'make'
+    | .
+        reset 'make' settings
+    | ls :{int}
+        show all files already created
+        (page {int}, default 0)
+    | :{int}
+        set resolution to {int}
+    | #
+        hash new name and create file
+    | '{str}
+        use {str} as name
+    | :{int} #
+    | :{int} '{str}
+        execute sequentially as above
+<END>
+
+<NIL>
+Root help
+
+Syntax:
+    | .
+        reset all settings
+    | {nil_expr}
+        interprete according to grammar
+        see description in file 'grammar.txt'
+    | ~
+        quit
+    | /
+        next ls page (fails if no page displayed)
+<END>
