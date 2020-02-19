@@ -1,0 +1,4 @@
+#!/bin/bash
+
+rm *.ppm &>/dev/null
+rm .x.txt &>/dev/null

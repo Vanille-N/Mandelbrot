@@ -70,6 +70,7 @@ three_way = lambda p: [max(0, 1-2*p), 1-abs(2*p-1), max(0, 2*p-1)]
 delta_power = lambda a: (lambda p: [1, 0, 0] if p == 0 else [0, (1-p)**a, 1-(1-p)**a])
 delta_linear = delta_power(1)
 delta_three_way = lambda p: [1, 0, 0, 0] if p == 0 else [0, max(0, 1-2*p), 1-abs(2*p-1), max(0, 2*p-1)]
+n_way = lambda n: (lambda p: [max(0, 1-abs((n-1)*p - i)) for i in range(n)])
 
 ### Standard colors
 BLU = (0, 102, 255)
@@ -99,7 +100,7 @@ def make(n=1, c=BLK):
         printmap(gradient(n, c)(f, *C))
     return makemap
 
-print(45)
+print(46)
 
 
 
@@ -153,3 +154,4 @@ make(2, BLK)(three_way, WHT, YLW, BLK)
 make()(delta_three_way, WHT, YLW, ORG, RED)
 make()(delta_three_way, WHT, YLW, GRN, dGRN)
 make()(delta_three_way, lPPL, PPL, BLU, RED)
+make()(n_way(6), WHT, YLW, GRN, BLU, PPL, RED)
