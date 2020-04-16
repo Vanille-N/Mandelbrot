@@ -82,5 +82,3 @@ indic :=
 
 quantif :=
     | {int}
-
-Notes and rules :
