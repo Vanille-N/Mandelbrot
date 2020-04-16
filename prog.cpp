@@ -5,8 +5,7 @@
 #include <complex>
 #include <fstream>
 #include <stdlib.h>
-
-static std::ofstream db ("debug.txt") ;
+#include <time.h>
 
 /* Assoc class provides an easy two-way correspondance between user keywords
  * and internal cmd representation.
@@ -62,17 +61,17 @@ enum msg_log {UNKCHR, NOSELEC, NOINDIC, NOFILE, PARSE, NOSUCHKW,
 static Assoc kw ;
 
 static std::string curr_name = "NULL" ;
-static std::string msg_info = "" ;
 
 static const int num_maxlen = 7 ;
-static const int str_maxlen = 10 ;
+static const int str_maxlen = 20 ;
 static const int cmd_maxlen = 50 ;
-static const int view_hgt = 60 ;
-static const int view_wth = 60 ;
-static const int logI = 5 ;
-static const int logJ = 85 ;
-static const int viewI = 5 ;
-static const int viewJ = 5 ;
+static const int view_hgt = 68 ;
+static const int view_wth = 68 ;
+static const int log_hgt = 20 ;
+static const int log_vpos = 5 ;
+static const int log_hpos = 85 ;
+static const int view_vpos = 5 ;
+static const int view_hpos = 5 ;
 static const int entry_nb = 20 ;
 static const int colors_nb = 40 ;
 
@@ -83,16 +82,16 @@ static cmd curr_scope = NIL ;
 static int curr_lspage = -1 ;
 static cmd ls_scope = NIL ;
 
-static std::vector<msg_log> hist_log ;
+static std::vector<std::string> log_hist ;
 
-static double vresol = 1000 ;
-static double hresol = 1000 ;
-static double hdiv = 1 ;
-static double vdiv = 1 ;
-static double lt = -2.5 ;
-static double rt = .5 ;
-static double hi = 1 ;
-static double lo = -1 ;
+static double pic_vresol = 1000 ;
+static double pic_hresol = 1000 ;
+static double view_hdiv = 1 ;
+static double view_vdiv = 1 ;
+static double view_lt = -2.5 ;
+static double view_rt = .5 ;
+static double view_hi = 1 ;
+static double view_lo = -1 ;
 
 struct slice {
     int beg ;
@@ -108,23 +107,23 @@ static std::vector<rgb> curr_map ;
 static std::string command ;
 
 static int * preview ;
+static int diverge_min = 0 ;
 
 
 void refresh () {
     printf("\033[1;1H\n") ;
 }
 
-
-void clear_log () {
-    for (int i = 0; i < 15; i++) {
-        printf("\033[%d;%dH", logI+i, logJ) ;
-        for (int j = 0; j < 50; j++) {
+void log_clear () {
+    for (int i = 0; i < view_hgt; i++) {
+        printf("\033[%d;%dH", log_vpos+i, log_hpos) ;
+        for (int j = 0; j < 80; j++) {
             putchar(' ') ;
         }
     }
 }
 
-void clear_prompt () {
+void prompt_clear () {
     for (int i = 1; i < 5; i++) {
         printf("\033[%d;%dH", i, 1) ;
         for (int j = 0; j < 90; j++) {
@@ -133,9 +132,9 @@ void clear_prompt () {
     }
 }
 
-void clear_view () {
+void view_clear () {
     for (int i = 0; i < view_hgt; i++) {
-        printf("\033[%d;%dH", viewI+i, viewJ) ;
+        printf("\033[%d;%dH", view_vpos+i, view_hpos) ;
         for (int j = 0; j < view_wth; j++) {
             putchar(' ') ;
         }
@@ -144,9 +143,9 @@ void clear_view () {
 
 // CALCULATIONS
 
-void set_resolution (double resol) {
-    vresol = resol ;
-    std::cout << vresol ;
+void resol_set (double resol) {
+    pic_vresol = resol ;
+    //std::cout << pic_vresol ;
 }
 
 char random_chr () {
@@ -158,8 +157,9 @@ char random_chr () {
 }
 
 std::string random_name () {
-    char name [10] ;
-    for (int i = 0; i < 10; i++) {
+    srand((unsigned int)(time(NULL) + pic_vresol * (view_hi - view_lo) + pic_hresol * (view_rt - view_lt))) ;
+    char name [5] ;
+    for (int i = 0; i < 5; i++) {
         name[i] = random_chr() ;
     }
     return std::string(name) ;
@@ -178,11 +178,11 @@ void hash_name () {
     } while(fexists(curr_name)) ;
 }
 
-void adjust_focus () {
-    double factor = (hi-lo) / (rt-lt) ;
-    hresol = vresol / factor ;
-    hdiv = (rt - lt) / view_wth ;
-    vdiv = (hi - lo) / view_hgt ;
+void focus_adjust () {
+    double factor = (view_hi-view_lo) / (view_rt-view_lt) ;
+    pic_hresol = pic_vresol / factor ;
+    view_hdiv = (view_rt - view_lt) / view_wth ;
+    view_vdiv = (view_hi - view_lo) / view_hgt ;
 }
 
 int diverge (std::complex<double> c) {
@@ -202,12 +202,31 @@ std::vector<double> linspace (double a, double b, int n) {
     return v ;
 }
 
-void display_preview () {
-    for (int i = 0; i < view_hgt/2; i++) {
-        printf("\033[%d;%dH", viewI+i, viewJ) ;
+int view_colorspread (int dv) {
+    int prop = (int)std::ceil(7.0 * (dv - diverge_min) / (diverge_iter - diverge_min)) ;
+    switch (prop) {
+        case 0: return 34 ;
+        case 1: return 94 ;
+        case 2: return 36 ;
+        case 3: return 96 ;
+        case 4: return 97 ;
+        case 5: return 37 ;
+        case 6: return 90 ;
+        case 7: return 30 ;
+    }
+}
+
+void view_display () {
+    for (int i = 0; i < view_hgt; i++) {
         for (int j = 0; j < view_wth; j++) {
-            int bg = (preview[2*i*view_wth + j] ? 100 : 106) ;
-            int fg = (preview[(2*i+1)*view_wth + j] ? 90 : 96) ;
+            diverge_min = std::min(diverge_min, preview[i*view_wth + j]) ;
+        }
+    }
+    for (int i = 0; i < view_hgt/2; i++) {
+        printf("\033[%d;%dH", view_vpos+i, view_hpos) ;
+        for (int j = 0; j < view_wth; j++) {
+            int bg = 10 + view_colorspread(preview[2*i*view_wth + j]) ;
+            int fg = view_colorspread(preview[(2*i+1)*view_wth + j]) ;
             printf("\033[%d;%dm▄", bg, fg) ;
         }
     }
@@ -215,23 +234,17 @@ void display_preview () {
 }
 
 void preview_redraw () {
-    clear_view() ;
-    auto hspace = linspace(lt, rt, view_wth) ;
-    auto vspace = linspace(lo, hi, view_hgt) ;
-    // std::cout << "\n" ;
-    // for (int i = 0; i < viewI; i++) {
-    //     std::cout << hspace[i] << " " ;
-    // } std::cout << '\n' ;
-    // for (int i = 0; i < viewI; i++) {
-    //     std::cout << vspace[i] << " " ;
-    // } std::cout << '\n' ;
-    // std::cout << (1 / (2-1-1)) ;
+    view_clear() ;
+    auto hspace = linspace(view_lt, view_rt, view_wth) ;
+    auto vspace = linspace(view_hi, view_lo, view_hgt) ;
+    // Note: hi->lo and not lo->hi to compensate for the fact that
+    // i increases downward while y increases upward !
     for (int i = 0; i < view_hgt; i++) {
         for (int j = 0; j < view_wth; j++) {
             preview[i*view_wth + j] = diverge_iter - diverge(std::complex<double> (hspace[j], vspace[i])) ;
         }
     }
-    display_preview() ;
+    view_display() ;
 }
 
 std::vector<int> round (std::vector<double> orig) {
@@ -242,50 +255,96 @@ std::vector<int> round (std::vector<double> orig) {
     return r ;
 }
 
-void make_image () {
-    adjust_focus() ;
+void image_make () {
+    focus_adjust() ;
     preview_redraw() ;
-    int I = (int)std::ceil(vresol) ;
-    int J = (int)std::ceil(hresol) ;
-    std::ofstream pic (curr_name + ".ppm") ;
-    pic << "P3\n" << J << " " << I << "\n255\n" ;
-    auto X = linspace(lt, rt, J) ;
-    auto Y = linspace(lo, hi, I) ;
-    auto colorspread = round(linspace(0, colors_nb, diverge_iter)) ;
+    int I = (int)std::ceil(pic_vresol) ;
+    int J = (int)std::ceil(pic_hresol) ;
+    std::ofstream otmp ("tmp") ;
+    auto X = linspace(view_lt, view_rt, J) ;
+    auto Y = linspace(view_hi, view_lo, I) ;
+    auto colorspread = round(linspace(0, colors_nb, diverge_iter-diverge_min)) ;
     int indic_i = 0, indic_j = 0 ;
     int corresp = (int)std::ceil((float)(I*J) / (.5 * view_hgt * view_wth)) ;
     int pxdrawn = 0 ;
+    int mindv = diverge_iter, maxdv = 0 ;
+    int n ;
+    //std::vector<int> cnt (diverge_iter) ;
     for (int i = 0; i < I; i++) {
         for (int j = 0; j < J; j++) {
-            int n = colorspread[diverge_iter - diverge(std::complex<double> (X[j], Y[i]))] ;
-            //std::cout << (n ? '.' : '@') ;
-            rgb C = curr_map[n] ;
-            pic << C.R << " " << C.G << " " << C.B << " " ;
+            n = diverge(std::complex<double> (X[j], Y[i])) ;
+            printf("\033[%d;%dH\033[102m \033[1;1H\n", view_vpos+indic_i, view_hpos+indic_j) ;
+            otmp << n << " " ;
+            if (n < mindv) mindv = n ;
+            if (n > maxdv) maxdv = n ;
+            //cnt[n]++ ;
             if (++pxdrawn % corresp == 0) {
-                printf("\033[%d;%dH\033[102m \033[1;1H\n", viewI+indic_i, viewJ+indic_j) ;
                 indic_j++ ;
                 if (indic_j == view_wth) {
-                  indic_j = 0 ;
-                  indic_i++ ;
+                    indic_j = 0 ;
+                    indic_i++ ;
                 }
             }
         }
-        pic << "\n" ;
-        //std::cout << "\n" ;
     }
+    otmp.close() ;
     while (indic_j < view_wth) {
-        printf("\033[%d;%dH\033[102m \033[1;1H\n", viewI+indic_i, viewJ+indic_j) ;
+        printf("\033[%d;%dH\033[102m \033[1;1H\n", view_vpos+indic_i, view_hpos+indic_j) ;
         indic_j++ ;
     }
+    printf("\033[1;1H\033[0m") ;
+    // Calculations done, now convert to an image !
+    std::ofstream pic (curr_name + ".ppm") ;
+    std::ifstream itmp ("tmp") ;
+    pic << "P3\n" << J << " " << I << "\n255\n" ;
+    //std::vector<int> spread (diverge_iter) ;
+    // for (int i = 0; i < diverge_iter; i++) {
+    //     std::cout << cnt[i] << " " ;
+    // } std::cout << "\n" ;
+    // Turn cnt to a cumulative
+    // for (int i = 1; i < diverge_iter; i++) {
+    //     cnt[i] += cnt[i-1] ;
+    // }
+    // int a = 0 ;
+    // int N = I*J ;
+    // for (int i = 0; i < diverge_iter; i++) {
+    //     if (a < colors_nb-1) a++ ;
+    //     while (a < colors_nb-1 && cnt[a] < i * N / colors_nb) {
+    //         a++ ;
+    //     }
+    //     spread[i] = a ;
+    // }
+    // for (int i = 0; i < diverge_iter; i++) {
+    //     std::cout << cnt[i] << " " ;
+    // } std::cout << "\n" ;
+    // for (int i = 0; i < diverge_iter; i++) {
+    //     std::cout << "(i:"<< i << " s:" << spread[i] << ") " ;
+    // } std::cout << "\n" ;
+    rgb C ;
+    for (int i = 0; i < I; i++) {
+        for (int j = 0; j < J; j++) {
+            itmp >> n ;
+            if (n == maxdv) {
+                C = curr_map[0] ;
+            } else {
+                C = curr_map[colors_nb - (int)std::max(std::ceil((colors_nb-1) * ((double)n - mindv) / ((maxdv-1) - mindv)), 1.)] ;
+            }
+            pic << C.R << " " << C.G << " " << C.B << " " ;
+        }
+        pic << "\n" ;
+    }
+    itmp.close() ;
+    pic.close() ;
+    system("rm tmp") ;
 }
 
 // GRAPHIC OUTPUT
-void clear_screen () {
+void screen_clear () {
     std::system("clear") ;
 }
 
-void make_prompt () {
-    clear_prompt() ;
+void prompt_make () {
+    prompt_clear() ;
     printf("\033[2;5Hcmd\033[5m> \033[0m") ;
     printf("\033[3;7HCurrently inside scope ") ;
     for (int i = 0; i < kw[curr_scope].length(); i++) {
@@ -295,134 +354,75 @@ void make_prompt () {
     printf("\033[2;10H\033[0m") ;
 }
 
-void print_msg_header(msg_log m) {
+std::string msg_header(msg_log m) {
     switch(m) {
-        case UNKCHR:
-            printf("\033[31;1;5mERROR:\033[0m Unknown character") ;
-            break ;
-        case NOSELEC:
-            printf("\033[31;1;5mERROR:\033[0m No selector specified") ;
-            break ;
-        case NOINDIC:
-            printf("\033[31;1;5mERROR:\033[0m No indicator specified") ;
-            break ;
-        case NOFILE:
-            printf("\033[31;1;5mERROR:\033[0m No such file") ;
-            break ;
-        case PARSE:
-            printf("\033[31;1;5mERROR:\033[0m Critical parsing error") ;
-            break ;
-        case NOSUCHKW:
-            printf("\033[31;1;5mERROR:\033[0m Not a valid keyword") ;
-            break ;
-        case RESELEC:
-            printf("\033[33;1;4mWARNING:\033[0m Too many selectors specified") ;
-            break ;
-        case RENAME:
-            printf("\033[33;1;4mWARNING:\033[0m Name already specified") ;
-            break ;
-        case REINDIC:
-            printf("\033[33;1;4mWARNING:\033[0m Too many indicators specified") ;
-            break ;
-        case LONGQUANT:
-            printf("\033[33;1;4mWARNING:\033[0m Quantifier too long") ;
-            break ;
-        case LONGCMD:
-            printf("\033[33;1;4mWARNING:\033[0m Command too long") ;
-            break ;
-        case LONGNAME:
-            printf("\033[33;1;4mWARNING:\033[0m String literal too long") ;
-            break ;
-        case FEXISTS:
-            printf("\033[33;1;4mWARNING:\033[0m File already exists") ;
-            break ;
-        case QUIT:
-            printf("\033[33;1;4mWARNING:\033[0mQuit ?") ;
-            break ;
-        case DEFQUANT:
-            printf("\033[34;1mINFO:\033[0m Used default quantifier") ;
-            break ;
-        case DONE:
-            printf("\033[32;1mSUCCESS\033[0m") ;
-            break ;
-        case NEWSCOPE:
-            printf("\033[34;1mINFO:\033[0m Changed scope") ;
-            break ;
-        case LOADED:
-            printf("\033[34;1mINFO:\033[0m Loaded save file") ;
-            break ;
-        case SAVED:
-            printf("\033[34;1mINFO:\033[0m Current settings saved") ;
-            break ;
-        case NEWMAP:
-            printf("\033[34;1mINFO:\033[0m Changed color map") ;
-            break ;
-        case BUILT:
-            printf("\033[34;1mINFO:\033[0m Done building image") ;
-            break ;
-        case EMPTY:
-            printf("\033[34;1mINFO:\033[0m Blank expression") ;
-            break ;
-        case SIGLS:
-            printf("\033[34;1mINFO:\033[0m Asked for listing") ;
-            break ;
-        case SIGRESET:
-            printf("\033[34;1mINFO:\033[0m Asked for reset") ;
-            break ;
-        case SIGHELP:
-            printf("\033[34;1mINFO:\033[0m Asked for help") ;
-            break ;
-        case NEWFOCUS:
-            printf("\033[34;1mINFO:\033[0m Adjusting focus") ;
-            break ;
-    }
-}
-
-void print_msg_info() {
-    for (int i = 0; i < msg_info.size(); i++) {
-        putchar(msg_info[i]) ;
+        case UNKCHR:    return "\033[31;1;5mERROR:\033[0m Unknown character                " ;
+        case NOSELEC:   return "\033[31;1;5mERROR:\033[0m No selector specified            " ;
+        case NOINDIC:   return "\033[31;1;5mERROR:\033[0m No indicator specified           " ;
+        case NOFILE:    return "\033[31;1;5mERROR:\033[0m No such file                     " ;
+        case PARSE:     return "\033[31;1;5mERROR:\033[0m Critical parsing error           " ;
+        case NOSUCHKW:  return "\033[31;1;5mERROR:\033[0m Not a valid keyword              " ;
+        case RESELEC:   return "\033[33;1;4mWARNING:\033[0m Too many selectors specified   " ;
+        case RENAME:    return "\033[33;1;4mWARNING:\033[0m Name already specified         " ;
+        case REINDIC:   return "\033[33;1;4mWARNING:\033[0m Too many indicators specified  " ;
+        case LONGQUANT: return "\033[33;1;4mWARNING:\033[0m Quantifier too long            " ;
+        case LONGCMD:   return "\033[33;1;4mWARNING:\033[0m Command too long               " ;
+        case LONGNAME:  return "\033[33;1;4mWARNING:\033[0m String literal too long        " ;
+        case FEXISTS:   return "\033[33;1;4mWARNING:\033[0m File already exists            " ;
+        case QUIT:      return "\033[33;1;4mWARNING:\033[0m Quit ?                         " ;
+        case DEFQUANT:  return "\033[34;1mINFO:\033[0m Used default quantifier           " ;
+        case DONE:      return "\033[32;1mSUCCESS\033[0m                                 " ;
+        case NEWSCOPE:  return "\033[34;1mINFO:\033[0m Changed scope                     " ;
+        case LOADED:    return "\033[34;1mINFO:\033[0m Loaded save file                  " ;
+        case SAVED:     return "\033[34;1mINFO:\033[0m Current settings saved            " ;
+        case NEWMAP:    return "\033[34;1mINFO:\033[0m Changed color map                 " ;
+        case BUILT:     return "\033[34;1mINFO:\033[0m Done building image               " ;
+        case EMPTY:     return "\033[34;1mINFO:\033[0m Blank expression                  " ;
+        case SIGLS:     return "\033[34;1mINFO:\033[0m Asked for listing                 " ;
+        case SIGRESET:  return "\033[34;1mINFO:\033[0m Asked for reset                   " ;
+        case SIGHELP:   return "\033[34;1mINFO:\033[0m Asked for help                    " ;
+        case NEWFOCUS:  return "\033[34;1mINFO:\033[0m Adjusting focus                   " ;
+        default:        return "" ;
     }
 }
 
 void log_redraw () {
-    int L = logI, C = logJ ;
-    clear_log() ;
-    printf("\033[%d;%dH", L, C) ;
-    print_msg_header(hist_log[hist_log.size()-1]) ;
-    printf("\033[%d;%dH", L+1, C) ;
-    print_msg_info() ;
-    for (int i = hist_log.size()-2; i >= 0; i--) {
-        printf("\033[%d;%dH", L-i+(int)hist_log.size(), C) ;
-        print_msg_header(hist_log[i]) ;
+    int L = log_vpos, C = log_hpos ;
+    log_clear() ;
+    for (int i = log_hist.size()-1; i >= 0; i--) {
+        printf("\033[%d;%dH", L-i+(int)log_hist.size(), C) ;
+        std::cout << log_hist[i] ;
     }
-    make_prompt() ;
+    prompt_make() ;
 }
 
-void shift_hist () {
-    if (hist_log.size() <= 10) return ;
-    for (int i = 1; i < hist_log.size(); i++) {
-        hist_log[i-1] = hist_log[i] ;
+void hist_shift () {
+    if (log_hist.size() <= log_hgt) return ;
+    for (int i = 1; i < log_hist.size(); i++) {
+        log_hist[i-1] = log_hist[i] ;
     }
 }
 
-void log_err (msg_log e) {
-    shift_hist() ;
-    if (hist_log.size() <= 10) {
-        hist_log.push_back(e) ;
+void log_err (msg_log e, std::string s) {
+    hist_shift() ;
+    std::string n = msg_header(e) + s ;
+    if (log_hist.size() <= log_hgt) {
+        log_hist.push_back(n) ;
     } else {
-        hist_log[hist_log.size()-1] = e ;
+        log_hist[log_hist.size()-1] = n ;
     }
     log_redraw() ;
 }
 
-char log_warn (msg_log w) {
+char log_warn (msg_log w, std::string s) {
     //std::cout << "Got here before shift hist\n" ;
-    shift_hist() ;
+    hist_shift() ;
     //std::cout << "Hist shifted \n" ;
-    if (hist_log.size() <= 10) {
-        hist_log.push_back(w) ;
+    std::string n = msg_header(w) + s ;
+    if (log_hist.size() <= log_hgt) {
+        log_hist.push_back(n) ;
     } else {
-        hist_log[hist_log.size()-1] = w ;
+        log_hist[log_hist.size()-1] = n ;
     }
     //std::cout << "Redraw?\n" ;
     log_redraw() ;
@@ -434,19 +434,20 @@ char log_warn (msg_log w) {
     return ans ;
 }
 
-void log_info (msg_log i) {
-    shift_hist() ;
-    if (hist_log.size() <= 10) {
-        hist_log.push_back(i) ;
+void log_info (msg_log i, std::string s) {
+    hist_shift() ;
+    std::string n = msg_header(i) + s ;
+    if (log_hist.size() <= log_hgt) {
+        log_hist.push_back(n) ;
     } else {
-        hist_log[hist_log.size()-1] = i ;
+        log_hist[log_hist.size()-1] = n ;
     }
     log_redraw() ;
 }
 
-void read_ls_load () {
+void ls_load_read () {
     ls_text.clear() ;
-    system("ls *.sv 1>.x.txt 2>/dev/null") ;
+    system("ls -a .*.save 1>.x.txt 2>/dev/null") ;
     std::ifstream x (".x.txt") ;
     std::string line ;
     while (getline(x, line)) {
@@ -454,7 +455,17 @@ void read_ls_load () {
     }
 }
 
-void read_ls_make () {
+void ls_nil_read () {
+    ls_text.clear() ;
+    system("ls -a .*.meta 1>.x.txt 2>/dev/null") ;
+    std::ifstream x (".x.txt") ;
+    std::string line ;
+    while (getline(x, line)) {
+        ls_text.push_back(line) ;
+    }
+}
+
+void ls_make_read () {
     ls_text.clear() ;
     system("ls *.ppm 1>.x.txt 2>/dev/null") ;
     std::ifstream x (".x.txt") ;
@@ -464,7 +475,7 @@ void read_ls_make () {
     }
 }
 
-void read_ls_map () {
+void ls_map_read () {
     ls_colors.clear() ;
     std::ifstream x (".cmaps.txt") ;
     int r, g, b ;
@@ -484,148 +495,178 @@ void read_ls_map () {
     }
 }
 
-int set_map (int id) {
-    read_ls_map() ;
+int map_choose (int id) {
+    ls_map_read() ;
     if (id < ls_colors.size()) {
         curr_map = ls_colors[id] ;
     } else {
-        msg_info = "Map does not exist" ;
-        log_err(NOFILE) ;
+        log_err(NOFILE, "Map does not exist") ;
         return 1 ;
     }
     return 0 ;
 }
 
-void reset_map () {
-    set_map(0) ;
+void map_reset () {
+    map_choose(0) ;
 }
 
-void reset_make () {
-    set_resolution(1) ;
+void make_reset () {
+    resol_set(1) ;
 }
 
-void reset_rec () {
-    lt = -2.5 ;
-    rt = .5 ;
-    hi = 1 ;
-    lo = -1 ;
+void rec_reset () {
+    view_lt = -2.5 ;
+    view_rt = .5 ;
+    view_hi = 1 ;
+    view_lo = -1 ;
 }
 
-void reset_nil () {
-    reset_map() ;
-    reset_make() ;
-    reset_rec() ;
+void nil_reset () {
+    map_reset() ;
+    make_reset() ;
+    rec_reset() ;
 }
 
-void change_focus (cmd side, int indic, int quant) {
-    if (quant == -1) quant = 1 ;
+void focus_change (cmd side, int indic, int quant) {
+    if (quant == -1) {
+        quant = 1 ;
+        log_info(DEFQUANT, "1") ;
+    }
     switch (side) {
-        case LSIDE: lt += hdiv * quant * (indic==ZOOMIN ? +1 : -1) ; break ;
-        case RSIDE: rt += hdiv * quant * (indic==ZOOMIN ? -1 : +1) ; break ;
-        case USIDE: hi += vdiv * quant * (indic==ZOOMIN ? -1 : +1) ; break ;
-        case DSIDE: lo += vdiv * quant * (indic==ZOOMIN ? +1 : -1) ; break ;
+        case LSIDE: view_lt += view_hdiv * quant * (indic==ZOOMIN ? +1 : -1) ; break ;
+        case RSIDE: view_rt += view_hdiv * quant * (indic==ZOOMIN ? -1 : +1) ; break ;
+        case USIDE: view_hi += view_vdiv * quant * (indic==ZOOMIN ? -1 : +1) ; break ;
+        case DSIDE: view_lo += view_vdiv * quant * (indic==ZOOMIN ? +1 : -1) ; break ;
     }
-    if (lo > hi) {
-        double tmp = hi ;
-        hi = lo ;
-        lo = tmp ;
+    if (view_lo > view_hi) {
+        double tmp = view_hi ;
+        view_hi = view_lo ;
+        view_lo = tmp ;
     }
-    if (lt > rt) {
-        double tmp = lt ;
-        lt = rt ;
-        rt = tmp ;
+    if (view_lt > view_rt) {
+        double tmp = view_lt ;
+        view_lt = view_rt ;
+        view_rt = tmp ;
     }
-    msg_info = "Side " + kw[side] ;
-    log_info(NEWFOCUS) ;
+    log_info(NEWFOCUS, "Side " + kw[side] + kw[indic]) ;
 }
 
-void print_ls_load () {
+void ls_load_print () {
     ls_scope = LOAD ;
-    clear_view() ;
-    read_ls_load() ;
+    view_clear() ;
+    ls_load_read() ;
     int id = curr_lspage * entry_nb ;
-    printf("\033[%d;%dHShowing page %d for LOAD", viewI, viewJ, curr_lspage) ;
+    printf("\033[%d;%dHShowing page %d for LOAD", view_vpos, view_hpos, curr_lspage) ;
     int i ;
     for (i = 0; i < std::min((int)ls_text.size()-id, entry_nb); i++) {
-        printf("\033[%d;%dH\033[1m%d: \033[0m", viewI+2+i, viewJ, id+i) ;
+        printf("\033[%d;%dH\033[1m%d: \033[0m", view_vpos+2+i, view_hpos, id+i) ;
         for (int j = 0; j < ls_text[id+i].length(); j++) {
             putchar(ls_text[id+i][j]) ;
         }
     }
     if (i == 0) {
-        printf("\033[%d;%dHEmpty", viewI+2, viewJ) ;
+        printf("\033[%d;%dHEmpty", view_vpos+2, view_hpos) ;
     }
 }
 
-void print_ls_save () {
+void ls_nil_print () {
+    ls_scope = NIL ;
+    view_clear() ;
+    ls_nil_read() ;
+    int id = curr_lspage * entry_nb ;
+    printf("\033[%d;%dHShowing page %d for NIL", view_vpos, view_hpos, curr_lspage) ;
+    int i ;
+    for (i = 0; i < std::min((int)ls_text.size()-id, entry_nb); i++) {
+        printf("\033[%d;%dH\033[1m%d: \033[0m", view_vpos+2+i, view_hpos, id+i) ;
+        for (int j = 0; j < ls_text[id+i].length(); j++) {
+            putchar(ls_text[id+i][j]) ;
+        }
+    }
+    if (i == 0) {
+        printf("\033[%d;%dHEmpty", view_vpos+2, view_hpos) ;
+    }
+}
+
+void ls_save_print () {
     ls_scope = SAVE ;
-    clear_view() ;
-    read_ls_load() ;
+    view_clear() ;
+    ls_load_read() ;
     int id = curr_lspage * entry_nb ;
-    printf("\033[%d;%dHShowing page %d for SAVE", viewI, viewJ, curr_lspage) ;
+    printf("\033[%d;%dHShowing page %d for SAVE", view_vpos, view_hpos, curr_lspage) ;
     int i ;
     for (i = 0; i < std::min((int)ls_text.size()-id, entry_nb); i++) {
-        printf("\033[%d;%dH\033[1m%d: \033[0m", viewI+2+i, viewJ, id+i) ;
+        printf("\033[%d;%dH\033[1m%d: \033[0m", view_vpos+2+i, view_hpos, id+i) ;
         for (int j = 0; j < ls_text[id+i].length(); j++) {
             putchar(ls_text[id+i][j]) ;
         }
     }
     if (i == 0) {
-        printf("\033[%d;%dHEmpty", viewI+2, viewJ) ;
+        printf("\033[%d;%dHEmpty", view_vpos+2, view_hpos) ;
     }
 }
 
-void print_ls_rec () {
+void ls_rec_print () {
     ls_scope = REC ;
-    clear_view() ;
-    adjust_focus() ;
-    printf("\033[%d;%dHCurrent settings for REC", viewI, viewJ) ;
-    printf("\033[%d;%dHSize (in pixels): vertical %d ; horizontal %d", viewI+2, viewJ, (int)std::ceil(vresol), (int)std::ceil(hresol)) ;
-    printf("\033[%d;%dHShowing complex plane", viewI+3, viewJ) ;
-    printf("\033[%d;%dHfrom %f+%fi", viewI+4, viewJ, lt, lo) ;
-    printf("\033[%d;%dHto %f+%fi", viewI+5, viewJ, rt, hi) ;
+    view_clear() ;
+    focus_adjust() ;
+    printf("\033[%d;%dHCurrent settings for REC", view_vpos, view_hpos) ;
+    printf("\033[%d;%dHSize (in pixels): vertical %d ; horizontal %d", view_vpos+2, view_hpos, (int)std::ceil(pic_vresol), (int)std::ceil(pic_hresol)) ;
+    printf("\033[%d;%dHShowing complex plane", view_vpos+3, view_hpos) ;
+    printf("\033[%d;%dHfrom %f+%fi", view_vpos+4, view_hpos, view_lt, view_lo) ;
+    printf("\033[%d;%dHto %f+%fi", view_vpos+5, view_hpos, view_rt, view_hi) ;
 }
 
-void print_ls_make () {
+void ls_make_print () {
     ls_scope = MAKE ;
-    clear_view() ;
-    read_ls_make() ;
+    view_clear() ;
+    ls_make_read() ;
     int id = curr_lspage * entry_nb ;
-    printf("\033[%d;%dHShowing page %d for MAKE", viewI, viewJ, curr_lspage) ;
+    printf("\033[%d;%dHShowing page %d for MAKE", view_vpos, view_hpos, curr_lspage) ;
     int i ;
     for (i = 0; i < std::min((int)ls_text.size()-id, entry_nb); i++) {
-        printf("\033[%d;%dH\033[1m%d: \033[0m", viewI+2+i, viewJ, id+i) ;
+        printf("\033[%d;%dH\033[1m%d: \033[0m", view_vpos+2+i, view_hpos, id+i) ;
         for (int j = 0; j < ls_text[id+i].length(); j++) {
             putchar(ls_text[id+i][j]) ;
         }
     }
     if (i == 0) {
-        printf("\033[%d;%dHEmpty", viewI+2, viewJ) ;
+        printf("\033[%d;%dHEmpty", view_vpos+2, view_hpos) ;
     }
+    focus_adjust() ;
+    printf("\033[%d;%dHResolution: horizontal %d", view_vpos+entry_nb+5, view_hpos, (int)std::ceil(pic_hresol)) ;
+    printf("\033[%d;%dH            vertical   %d", view_vpos+entry_nb+6, view_hpos, (int)std::ceil(pic_vresol)) ;
+    printf("\033[%d;%dHDiverge iter: %d", view_vpos+entry_nb+7, view_hpos, diverge_iter) ;
+    printf("\033[%d;%dHdiverge radius: %d", view_vpos+entry_nb+8, view_hpos, (int)std::ceil(diverge_radius)) ;
 }
 
-void print_ls_map () {
+void ls_map_print () {
     ls_scope = MAP ;
-    clear_view() ;
-    read_ls_map() ;
+    view_clear() ;
+    ls_map_read() ;
     int id = curr_lspage * entry_nb ;
-    printf("\033[%d;%dHShowing page %d for MAP", viewI, viewJ, curr_lspage) ;
+    printf("\033[%d;%dHShowing page %d for MAP", view_vpos, view_hpos, curr_lspage) ;
     int i ;
     for (i = 0; i < std::min((int)ls_colors.size()-id, entry_nb); i++) {
-        printf("\033[%d;%dH\033[0m\033[1m%d:", viewI+2+i, viewJ, id+i) ;
-        printf("\033[%d;%dH\033[0m", viewI+2+i, viewJ+5) ;
+        printf("\033[%d;%dH\033[0m\033[1m%d:", view_vpos+2+i, view_hpos, id+i) ;
+        printf("\033[%d;%dH\033[0m", view_vpos+2+i, view_hpos+5) ;
         for (int j = 0; j < ls_colors[id+i].size(); j++) {
             auto col = ls_colors[id+i][j] ;
             printf("\033[38;2;%d;%d;%dm█", col.R, col.G, col.B) ;
         }
     }
     if (i == 0) {
-        printf("\033[%d;%dHEmpty", viewI+2, viewJ) ;
+        printf("\033[%d;%dHEmpty", view_vpos+2, view_hpos) ;
+    }
+    printf("\033[%d;%dH\033[0mCurrently selected:", view_vpos+entry_nb+5, view_hpos) ;
+    printf("\033[%d;%dH\033[0m", view_vpos+entry_nb+6, view_hpos) ;
+    for (int j = 0; j < curr_map.size(); j++) {
+        auto col = curr_map[j] ;
+        printf("\033[38;2;%d;%d;%dm█", col.R, col.G, col.B) ;
     }
 }
 
-void print_help (std::string indic, std::string term) {
-    clear_view() ;
+void help_print (std::string indic, std::string term) {
+    view_clear() ;
     std::ifstream helpf (".help.txt") ;
     std::string line ;
     bool printing = false ;
@@ -636,7 +677,7 @@ void print_help (std::string indic, std::string term) {
         } else if (printing && line == term) {
             return ;
         } else if (printing) {
-            printf("\033[%d;%dH", viewI+cnt, viewJ) ;
+            printf("\033[%d;%dH", view_vpos+cnt, view_hpos) ;
             for (int i = 0; i < line.length(); i++) {
                 putchar(line[i]) ;
             }
@@ -645,63 +686,85 @@ void print_help (std::string indic, std::string term) {
     }
 }
 
-void print_scope_help () {
-    print_help("<SCOPE>", "<END>") ;
+void scope_help_print () {
+    help_print("<SCOPE>", "<END>") ;
 }
 
-void print_map_help () {
-    print_help("<MAP>", "<END>") ;
+void map_help_print () {
+    help_print("<MAP>", "<END>") ;
 }
 
-void print_save_help () {
-    print_help("<SAVE>", "<END>") ;
+void save_help_print () {
+    help_print("<SAVE>", "<END>") ;
 }
 
-void print_load_help () {
-    print_help("<LOAD>", "<END>") ;
+void load_help_print () {
+    help_print("<LOAD>", "<END>") ;
 }
 
-void print_rec_help () {
-    print_help("<REC>", "<END>") ;
+void rec_help_print () {
+    help_print("<REC>", "<END>") ;
 }
 
-void print_make_help () {
-    print_help("<MAKE>", "<END>") ;
+void make_help_print () {
+    help_print("<MAKE>", "<END>") ;
 }
 
-void print_nil_help () {
-    print_help("<NIL>", "<END>") ;
+void nil_help_print () {
+    help_print("<NIL>", "<END>") ;
 }
 
 // TEXT IO
 
-void output_save () {
-    std::ofstream sv (curr_name + ".sv") ;
-    sv << hresol << " " << vresol << "\n" ;
-    sv << lt << " " << rt << "\n" ;
-    sv << lo << " " << hi << "\n" ;
+void save_output () {
+    std::ofstream sv ("." + curr_name + ".save") ;
+    sv << pic_hresol << " " << pic_vresol << "\n" ;
+    sv << view_lt << " " << view_rt << "\n" ;
+    sv << view_lo << " " << view_hi << "\n" ;
 }
 
-void input_save () {
-    std::ifstream sv (curr_name + ".sv") ;
-    sv >> hresol ;
-    sv >> vresol ;
-    sv >> lt ;
-    sv >> rt ;
-    sv >> lo ;
-    sv >> hi ;
+void save_input () {
+    std::ifstream sv (curr_name) ;
+    sv >> pic_hresol ;
+    sv >> pic_vresol ;
+    sv >> view_lt ;
+    sv >> view_rt ;
+    sv >> view_lo ;
+    sv >> view_hi ;
 }
 
-void input_save (int id) {
-    read_ls_load() ;
+void save_input (int id) {
+    ls_load_read() ;
     if (id < ls_text.size()) {
         curr_name = ls_text[id] ;
     } else {
-        msg_info = "Quantifier too big" ;
-        log_err(NOFILE) ;
+        log_err(NOFILE, "Quantifier too big") ;
         return ;
     }
-    input_save() ;
+    save_input() ;
+}
+
+void meta_output () {
+    std::ofstream sv ("." + curr_name + ".meta") ;
+    sv << diverge_radius << " " << pic_vresol << "\n" ;
+}
+
+void meta_input () {
+    std::ifstream sv (curr_name) ;
+    sv >> diverge_radius ;
+    sv >> pic_vresol ;
+    focus_adjust() ;
+}
+
+void meta_input (int id) {
+    ls_nil_read() ;
+    if (id < ls_text.size()) {
+        curr_name = ls_text[id] ;
+    } else {
+        log_err(NOFILE, "Quantifier too big") ;
+        return ;
+    }
+    meta_input() ;
 }
 
 enum types_chr {KEYWORD, SELECTOR, INDICATOR, MODIFIER, SYMBOL, UNKNOWN, BLANK} ;
@@ -710,7 +773,7 @@ types_chr chr_type (char c) {
     switch (c) {
         case 'a': case 'c': case 'e': case 'i': case 'k':
         case 'l': case 'm': case 'n': case 'o': case 'p':
-        case 'r': case 's': case 'v':
+        case 'r': case 's': case 'v': case 'd':
             return KEYWORD ;
         case '?': case '#': case '/': case '.': case '~':
             return SYMBOL ;
@@ -772,7 +835,7 @@ void tokenize () {
         } else if (curr == UNKNOWN) {
             //std::cout << "wtf?\n" ;
             tokens.push_back({-1, -1}) ;
-            msg_info = "'" + command.substr(idx+len, 1) + "' not recognized" ;
+            log_info(PARSE, "'" + command.substr(idx+len, 1) + "' not recognized") ;
             break ;
             //std::cout << "\n\n\n\n\n\n\n\n<<<" + command.substr(idx+len, 1) + ">>>\n" ;
         }
@@ -784,12 +847,11 @@ void tokenize () {
 
 /* Read integer at given location
  */
-int parse_int (std::string command, int begin, int len) {
+int int_parse (std::string command, int begin, int len) {
     int n = 0 ;
     // First chr is a ':', ignore it
     if (len-1 > num_maxlen) {
-        msg_info = command.substr(begin+1, 5) + "... truncate ? (y/n)" ;
-        char ans = log_warn(LONGQUANT) ;
+        char ans = log_warn(LONGQUANT, command.substr(begin+1, 5) + "... truncate ? (y/n)") ;
         if (ans == 'n') {
             return -1 ;
         } else {
@@ -808,10 +870,9 @@ int parse_int (std::string command, int begin, int len) {
 
 /* Read name at given location
  */
-std::string parse_name (int begin, int len) {
+std::string str_parse (int begin, int len) {
     if (len-1 > str_maxlen) {
-        msg_info = command.substr(begin+1, 5) + "... truncate ? (y/n)" ;
-        char ans = log_warn(LONGNAME) ;
+        char ans = log_warn(LONGNAME, command.substr(begin+1, 5) + "... truncate ? (y/n)") ;
         if (ans == 'n') {
             return "" ;
         } else {
@@ -830,9 +891,8 @@ void parse () {
     bool nameset = false ;
     if (command.length() > cmd_maxlen) {
         //std::cout << "Too long !\n" ;
-        msg_info = command.substr(0, 5) + "... truncate ? (y/n)" ;
         //std::cout << msg_info << "\n" ;
-        char ans = log_warn(LONGCMD) ;
+        char ans = log_warn(LONGCMD, command.substr(0, 5) + "... truncate ? (y/n)") ;
         //std::cout << "Passed\n" ;
         if (ans == 'n') {
             exec.push_back(ABORT) ;
@@ -844,17 +904,15 @@ void parse () {
     tokenize() ;
     for (int i = 0; i < tokens.size(); i++) {
         if (tokens[i].beg == -1) {
-            log_err(UNKCHR) ;
+            log_err(UNKCHR, "") ;
             exec.push_back(ABORT) ;
         } else if (command[tokens[i].beg] == '\'') {
-            auto name = parse_name(tokens[i].beg, tokens[i].len) ;
+            auto name = str_parse(tokens[i].beg, tokens[i].len) ;
             if (name.length() == 0) {
-                msg_info = "Process aborted : no name specified" ;
-                log_err(PARSE) ;
+                log_err(PARSE, "Process aborted : no name specified") ;
                 exec.push_back(ABORT) ;
             } else if (nameset) {
-                msg_info = "Overwrite ? (y/n)" ;
-                char ans = log_warn(RENAME) ;
+                char ans = log_warn(RENAME, "Overwrite ? (y/n)") ;
                 if (ans == 'n') {
                     continue ;
                 } else {
@@ -866,10 +924,9 @@ void parse () {
                 nameset = true ;
             }
         } else if (command[tokens[i].beg] == ':') {
-            int n = parse_int(command, tokens[i].beg, tokens[i].len) ;
+            int n = int_parse(command, tokens[i].beg, tokens[i].len) ;
             if (n == -1) {
-                msg_info = command.substr(tokens[i].beg, 5) + "... not a valid quantifier" ;
-                log_err(PARSE) ;
+                log_err(PARSE, command.substr(tokens[i].beg, 5) + "... not a valid quantifier") ;
                 exec.push_back(ABORT) ;
             } else {
                 exec.push_back(NUM) ;
@@ -880,8 +937,7 @@ void parse () {
             if (kw.exists(atom)) {
                 exec.push_back((cmd)kw[atom]) ;
             } else {
-                msg_info = atom.substr(0, std::min(5, (int)atom.length())) + (atom.length() > 5 ? "..." : "") ;
-                log_err(NOSUCHKW) ;
+                log_err(NOSUCHKW, atom.substr(0, std::min(5, (int)atom.length())) + (atom.length() > 5 ? "..." : "")) ;
                 exec.push_back(ABORT) ;
             }
         }
@@ -902,12 +958,12 @@ std::ostream& operator<< (std::ostream &o, const adjust& a) {
 
 void scope_enter_action (cmd s) {
     switch (s) {
-        case NIL: curr_lspage = -1 ; print_nil_help() ; break ;
-        case MAKE: curr_lspage = 0 ; print_ls_make() ; break ;
-        case MAP: curr_lspage = 0 ; print_ls_map() ; break ;
-        case REC: curr_lspage = -1 ; adjust_focus() ; preview_redraw() ; break ;
-        case LOAD: curr_lspage = 0 ; print_ls_load() ; break ;
-        case SAVE: curr_lspage = -1 ; print_save_help() ; break ;
+        case NIL: curr_lspage = -1 ; nil_help_print() ; break ;
+        case MAKE: curr_lspage = 0 ; ls_make_print() ; break ;
+        case MAP: curr_lspage = 0 ; ls_map_print() ; break ;
+        case REC: curr_lspage = -1 ; focus_adjust() ; preview_redraw() ; break ;
+        case LOAD: curr_lspage = 0 ; ls_load_print() ; break ;
+        case SAVE: curr_lspage = -1 ; save_help_print() ; break ;
     }
 }
 
@@ -915,48 +971,41 @@ void scope_enter_action (cmd s) {
 int execute () {
     cmd scope_restore = (cmd)curr_scope ;
     int idx = 0 ;
+    char ans ;
+    bool resol_just_set = false ;
     for (;;) {
         if (idx >= exec.size()) {
-            msg_info = "Nothing left to do" ;
-            log_info(EMPTY) ;
+            log_info(EMPTY, "Nothing left to do") ;
             goto end ;
         }
         switch (exec[idx]) {
             case SCOPE:
                 if (idx+1 >= exec.size()) {
-                    msg_info = "No scope specified" ;
-                    log_err(PARSE) ;
+                    log_err(PARSE, "No scope specified") ;
                     goto end ;
                 }
                 switch (exec[idx+1]) {
                     case HELP:
-                        print_scope_help() ;
-                        msg_info = "Terminate" ;
-                        log_info(DONE) ;
+                        scope_help_print() ;
+                        log_info(DONE, "Terminate") ;
                         goto end ;
                     case NIL: case REC: case MAP: case MAKE: case LOAD: case SAVE:
-                        msg_info = "Switching to " + kw[exec[idx+1]] ;
-                        log_info(NEWSCOPE) ;
+                        log_info(NEWSCOPE, "Switching to " + kw[exec[idx+1]]) ;
                         curr_scope = exec[idx+1] ;
-                        msg_info = "Terminate" ;
-                        log_info(DONE) ;
+                        log_info(DONE, "Terminate") ;
                         scope_enter_action(exec[idx+1]) ;
                         return 1 ;
                     case RESET:
-                        msg_info = "Reset scope : NIL" ;
-                        log_info(NEWSCOPE) ;
+                        log_info(NEWSCOPE, "Reset scope : NIL") ;
                         curr_scope = NIL ;
-                        msg_info = "Terminate" ;
-                        log_info(DONE) ;
+                        log_info(DONE, "Terminate") ;
                         return 1 ;
                     default:
-                        msg_info = kw[exec[idx+1]]  + " not expected after keyword scope" ;
-                        log_err(PARSE) ;
+                        log_err(PARSE, kw[exec[idx+1]]  + " not expected after keyword 'scope'") ;
                         goto end ;
                 }
             case NIL: case REC: case MAP: case MAKE: case LOAD: case SAVE:
-                msg_info = "Temporary scope change" ;
-                log_info(NEWSCOPE) ;
+                log_info(NEWSCOPE, "Temporary scope change to " + kw[exec[idx]]) ;
                 curr_scope = exec[idx] ;
                 idx++ ;
                 break ;
@@ -968,10 +1017,9 @@ int execute () {
                         } else {
                             curr_lspage = 0 ;
                         }
-                        print_ls_map() ;
-                        msg_info = "Terminate" ;
-                        log_info(SIGLS) ;
-                        log_info(DONE) ;
+                        ls_map_print() ;
+                        log_info(SIGLS, "Listing maps") ;
+                        log_info(DONE, "Terminate") ;
                         goto keepls ;
                     case LOAD:
                         if (idx+1 < exec.size() && exec[idx+1]==NUM) {
@@ -979,10 +1027,19 @@ int execute () {
                         } else {
                             curr_lspage = 0 ;
                         }
-                        print_ls_load() ;
-                        msg_info = "Terminate" ;
-                        log_info(SIGLS) ;
-                        log_info(DONE) ;
+                        ls_load_print() ;
+                        log_info(SIGLS, "Listing save files") ;
+                        log_info(DONE, "Terminate") ;
+                        goto keepls ;
+                    case NIL:
+                        if (idx+1 < exec.size() && exec[idx+1]==NUM) {
+                            curr_lspage = exec[idx+2] ;
+                        } else {
+                            curr_lspage = 0 ;
+                        }
+                        ls_nil_print() ;
+                        log_info(SIGLS, "Listing settings files") ;
+                        log_info(DONE, "Terminate") ;
                         goto keepls ;
                     case SAVE:
                         if (idx+1 < exec.size() && exec[idx+1]==NUM) {
@@ -990,10 +1047,9 @@ int execute () {
                         } else {
                             curr_lspage = 0 ;
                         }
-                        print_ls_save() ;
-                        msg_info = "Terminate" ;
-                        log_info(SIGLS) ;
-                        log_info(DONE) ;
+                        ls_save_print() ;
+                        log_info(SIGLS, "Listing save files") ;
+                        log_info(DONE, "Terminate") ;
                         goto keepls ;
                     case MAKE:
                         if (idx+1 < exec.size() && exec[idx+1]==NUM) {
@@ -1001,116 +1057,109 @@ int execute () {
                         } else {
                             curr_lspage = 0 ;
                         }
-                        print_ls_make() ;
-                        msg_info = "Terminate" ;
-                        log_info(SIGLS) ;
-                        log_info(DONE) ;
+                        ls_make_print() ;
+                        log_info(SIGLS, "Listing existing images") ;
+                        log_info(DONE, "Terminate") ;
                         goto keepls ;
                     case REC:
-                        print_ls_rec() ;
-                        msg_info = "Terminate" ;
-                        log_info(SIGLS) ;
-                        log_info(DONE) ;
+                        ls_rec_print() ;
+                        log_info(SIGLS, "Displaying current view settings") ;
+                        log_info(DONE, "Terminate") ;
                         goto end ;
                     default:
-                        msg_info = "LS not expected in current scope" ;
-                        log_err(PARSE) ;
+                        log_err(PARSE, "LS not expected in current scope") ;
                         goto end ;
                 }
             case HELP:
                 switch (curr_scope) {
                     case MAP:
-                        print_map_help() ; break ;
+                        map_help_print() ; break ;
                     case SAVE:
-                        print_save_help() ; break ;
+                        save_help_print() ; break ;
                     case LOAD:
-                        print_load_help() ; break ;
+                        load_help_print() ; break ;
                     case REC:
-                        print_rec_help() ; break ;
+                        rec_help_print() ; break ;
                     case MAKE:
-                        print_make_help() ; break ;
+                        make_help_print() ; break ;
                     case NIL:
-                        print_nil_help() ; break ;
+                        nil_help_print() ; break ;
                     }
-                msg_info = "Terminate" ;
-                log_info(SIGHELP) ;
-                log_info(DONE) ;
+                log_info(SIGHELP, "") ;
+                log_info(DONE, "Terminate") ;
                 goto end ;
             case RESET:
                 switch (curr_scope) {
                     case MAP:
-                        reset_map() ;
+                        map_reset() ;
                         scope_enter_action(MAP) ;
                         break ;
                     case REC:
-                        reset_rec() ;
+                        rec_reset() ;
                         scope_enter_action(REC) ;
                         break ;
                     case MAKE:
-                        reset_make() ;
+                        make_reset() ;
                         scope_enter_action(MAKE) ;
                         break ;
                     case NIL:
-                        reset_nil() ;
+                        nil_reset() ;
                         scope_enter_action(NIL) ;
                         break ;
                     default:
-                        msg_info = "No reset for scope " + kw[curr_scope] ;
-                        log_err(PARSE) ;
+                        log_err(PARSE, "No reset for scope " + kw[curr_scope]) ;
                         goto end ;
                 }
-                msg_info = "Terminate" ;
-                log_info(SIGRESET) ;
-                log_info(DONE) ;
+                log_info(SIGRESET, "") ;
+                log_info(DONE, "Terminate") ;
                 goto end ;
             case HASH:
                 switch (curr_scope) {
                     case SAVE:
                         hash_name() ;
-                        output_save() ;
+                        save_output() ;
                         goto end ;
                     case MAKE:
                         hash_name() ;
-                        make_image() ;
+                        image_make() ;
                         goto end ;
                     default:
-                        msg_info = kw[HASH] + " not expected in scope" + kw[curr_scope] ;
-                        log_err(PARSE) ;
+                        log_err(PARSE, kw[HASH] + " not expected in scope" + kw[curr_scope]) ;
                         goto end ;
                 }
             case NEXT:
                 if (curr_lspage == -1) {
-                    msg_info = "No ls page displayed" ;
-                    log_err(PARSE) ;
+                    log_err(PARSE, "No ls page displayed") ;
                     goto end ;
                 }
                 curr_lspage++ ;
                 switch (ls_scope) {
                     case MAP:
-                        print_ls_map() ;
+                        ls_map_print() ;
                         break ;
                     case LOAD:
-                        print_ls_load() ;
+                        ls_load_print() ;
                         break ;
                     case SAVE:
-                        print_ls_save() ;
+                        ls_save_print() ;
                         break ;
                     case MAKE:
-                        print_ls_make() ;
+                        ls_make_print() ;
                         break ;
                     case REC:
-                        print_ls_rec() ;
+                        ls_rec_print() ;
+                        break ;
+                    case NIL:
+                        ls_nil_print() ;
                         break ;
                 }
-                msg_info = "Terminate" ;
-                log_info(DONE) ;
+                log_info(DONE, "Terminate") ;
                 goto keepls ;
             case LSIDE: case RSIDE: case USIDE: case DSIDE: case HSIDE: case ASIDE:
             case VSIDE: case ZOOMIN: case ZOOMOUT: case LSHIFT: case RSHIFT: case USHIFT: case DSHIFT:
                 {
                 if (curr_scope != REC) {
-                    msg_info = "View specifications not expected here" ;
-                    log_err(PARSE) ;
+                    log_err(PARSE, "View specifications not expected here") ;
                     goto end ;
                 }
                 adjust chL {false, -1, -1} ;
@@ -1171,58 +1220,75 @@ int execute () {
                     }
                 }
                 act:
-                adjust_focus() ;
-                if (chL.active && chL.indicator != -1) change_focus(LSIDE, chL.indicator, chL.quantifier) ;
-                if (chR.active && chR.indicator != -1) change_focus(RSIDE, chR.indicator, chR.quantifier) ;
-                if (chU.active && chU.indicator != -1) change_focus(USIDE, chU.indicator, chU.quantifier) ;
-                if (chD.active && chD.indicator != -1) change_focus(DSIDE, chD.indicator, chD.quantifier) ;
-                adjust_focus() ;
+                focus_adjust() ;
+                if (chL.active && chL.indicator != -1) focus_change(LSIDE, chL.indicator, chL.quantifier) ;
+                if (chR.active && chR.indicator != -1) focus_change(RSIDE, chR.indicator, chR.quantifier) ;
+                if (chU.active && chU.indicator != -1) focus_change(USIDE, chU.indicator, chU.quantifier) ;
+                if (chD.active && chD.indicator != -1) focus_change(DSIDE, chD.indicator, chD.quantifier) ;
+                focus_adjust() ;
                 preview_redraw() ;
-                msg_info = "Terminate" ;
-                log_info(DONE) ;
+                log_info(DONE, "Terminate") ;
                 goto end ;
                 }
             case NUM:
                 switch (curr_scope) {
                     case MAP:
-                        set_map(exec[idx+1]) ;
-                        msg_info = "Terminate" ;
-                        log_info(DONE) ;
+                        map_choose(exec[idx+1]) ;
+                        log_info(DONE, "Terminate" ) ;
                         goto end ;
                     case MAKE:
-                        set_resolution(exec[idx+1]) ;
+                        if (resol_just_set) {
+                            diverge_iter = exec[idx+1] ;
+                        } else {
+                            resol_set(exec[idx+1]) ;
+                            resol_just_set = true ;
+                        }
+                        focus_adjust() ;
                         idx += 2 ;
                         continue ;
                     case LOAD:
-                        input_save(exec[idx+1]) ;
-                        msg_info = "Terminate" ;
-                        log_info(DONE) ;
+                        save_input(exec[idx+1]) ;
+                        focus_adjust() ;
+                        preview_redraw() ;
+                        log_info(DONE, "Terminate") ;
+                        goto end ;
+                    case NIL:
+                        meta_input(exec[idx+1]) ;
+                        log_info(DONE, "Terminate") ;
                         goto end ;
                     default:
-                        msg_info = "Quantifier not expected here" ;
-                        log_err(PARSE) ;
+                        log_err(PARSE, "Quantifier not expected here") ;
                         goto end ;
                 }
             case STR:
                 switch (curr_scope) {
                     case SAVE:
-                        input_save() ;
-                        msg_info = "Terminate" ;
-                        log_info(DONE) ;
+                        save_output() ;
+                        log_info(SAVED, "." + curr_name + ".save") ;
+                        log_info(DONE, "Terminate") ;
                         goto end ;
                     case MAKE:
-                        make_image() ;
-                        msg_info = "Terminate" ;
-                        log_info(DONE) ;
+                        image_make() ;
+                        log_info(BUILT, curr_name + ".ppm") ;
+                        log_info(DONE, "Terminate") ;
+                        goto end ;
+                    case NIL:
+                        meta_output() ;
+                        log_info(SAVED, "." + curr_name + ".meta") ;
+                        log_info(DONE, "Terminate") ;
                         goto end ;
                     default:
-                        msg_info = "String literal not expected here" ;
-                        log_err(PARSE) ;
+                        log_err(PARSE, "String literal not expected here") ;
                         goto end ;
                 }
                 goto end ;
             case EXIT:
-                return 0 ;
+                ans = log_warn(QUIT, "(y/n)") ;
+                if (ans == 'y') {
+                    return 0 ;
+                } else {
+                    goto end ;
+                }
             case ABORT:
                 goto end ;
         }
@@ -1267,24 +1333,24 @@ int main () {
     kw.link(EXIT, "~") ;
 
     preview = new int [view_hgt * view_wth] ;
-    clear_screen() ;
-    // adjust_focus() ;
+    screen_clear() ;
+    // focus_adjust() ;
     //
-    // change_focus(LSIDE, ZOOMOUT, 10) ;
-    // change_focus(USIDE, ZOOMOUT, 20) ;
-    // change_focus(DSIDE, ZOOMOUT, 10) ;
-    // change_focus(RSIDE, ZOOMOUT, 10) ;
+    // focus_change(LSIDE, ZOOMOUT, 10) ;
+    // focus_change(USIDE, ZOOMOUT, 20) ;
+    // focus_change(DSIDE, ZOOMOUT, 10) ;
+    // focus_change(RSIDE, ZOOMOUT, 10) ;
 
-    adjust_focus() ;
+    focus_adjust() ;
     preview_redraw() ;
 
-    read_ls_map() ;
-    set_map(0) ;
+    ls_map_read() ;
+    map_choose(0) ;
 
     do {
         //db << "OK\n" ;
-        make_prompt() ;
-        if (hist_log.size() > 0) {
+        prompt_make() ;
+        if (log_hist.size() > 0) {
             log_redraw() ;
         }
         getline(std::cin, command) ;
@@ -1294,7 +1360,6 @@ int main () {
         //std::cout << command ;
     } while (execute()) ;
 
-    db.close() ;
-    clear_screen() ;
+    screen_clear() ;
     return 0 ;
 }
