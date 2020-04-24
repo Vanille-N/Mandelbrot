@@ -1,6 +1,0 @@
-#!/bin/bash
-
-rm .*.save &>/dev/null
-rm .*.meta &>/dev/null
-rm *.ppm &>/dev/null
-rm .x.txt &>/dev/null
