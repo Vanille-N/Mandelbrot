@@ -38,7 +38,7 @@ cmd> {scope2} {cmd1}
 ```
 for any `{cmd1}` that is valid within `{scope2}`.
 
-In particular, since `{scope2} {cmd2}` is a valid command, then the following command is absolutely valid:
+In particular, since `{scope3} {cmd2}` is a valid command for any `{cmd2}` that is valid within `{scope3}`, then the following command is absolutely valid:
 ```
 cmd> make nil load save map rec A+ :50
 ```
