@@ -2,7 +2,7 @@
 
 C++ script focused on creating images of the Mandelbrot set using a language designed for easy navigation within the Mandelbrot set and many tools for choosing color palettes, image dimensions, and other metaparameters.
 
-Disclaimer: This project relies heavily on ANSI escape codes for interactive rendering. Correct execution has not been tested anywhere other than the default Terminal for Ubuntu 18.04.
+Disclaimer: This project relies heavily on ANSI escape codes for interactive rendering. Correct execution has not been tested anywhere other than the default Terminal for Ubuntu 18.04+.
 
 How to use:
 
@@ -38,7 +38,7 @@ cmd> {scope2} {cmd1}
 ```
 for any `{cmd1}` that is valid within `{scope2}`.
 
-In particular, since `{scope2} {cmd2}` is a valid command, then the following command is absolutely valid:
+In particular, since `{scope3} {cmd2}` is a valid command for any `{cmd2}` that is valid within `{scope3}`, then the following command is absolutely valid:
 ```
 cmd> make nil load save map rec A+ :50
 ```
