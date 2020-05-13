@@ -763,7 +763,7 @@ void meta_input (int id) {
     meta_input() ;
 }
 
-enum types_chr {KEYWORD, SELECTOR, INDICATOR, MODIFIER, SYMBOL, UNKNOWN, BLANK} ;
+enum types_chr {KEYWORD, SELECTOR, INDICATOR, MODIFIER, SYMBOL, UNKNOWN, BLANK, NUMERIC} ;
 
 types_chr chr_type (char c) {
     switch (c) {
@@ -779,13 +779,20 @@ types_chr chr_type (char c) {
         case '+': case '-': case '<': case '>': case '^':
         case '_':
             return INDICATOR ;
-        case '\'': case ':':
+        case '\'':
             return MODIFIER ;
+        case '0': case '1': case '2': case '3': case '4':
+        case '5': case '6': case '7': case '8': case '9':
+            return NUMERIC ;
         case ' ':
             return BLANK ;
         default:
             return UNKNOWN ;
     }
+}
+
+bool is_num (char c) {
+    return '0' <= c && c <= '9' ;
 }
 
 /* Cut the string into tokens :
@@ -845,16 +852,15 @@ void tokenize () {
  */
 int int_parse (std::string command, int begin, int len) {
     int n = 0 ;
-    // First chr is a ':', ignore it
-    if (len-1 > num_maxlen) {
-        char ans = log_warn(LONGQUANT, command.substr(begin+1, 5) + "... truncate ? (y/n)") ;
+    if (len > num_maxlen) {
+        char ans = log_warn(LONGQUANT, command.substr(begin, 5) + "... truncate ? (y/n)") ;
         if (ans == 'n') {
             return -1 ;
         } else {
-            len = num_maxlen + 1 ;
+            len = num_maxlen ;
         }
     }
-    for (int i = 1; i < len; i++) {
+    for (int i = 0; i < len; i++) {
         if ('0' <= command[begin+i] && command[begin+i] <= '9') {
             n = n*10 + command[begin+i] - '0' ;
         } else {
@@ -919,7 +925,7 @@ void parse () {
                 curr_name = name ;
                 nameset = true ;
             }
-        } else if (command[tokens[i].beg] == ':') {
+        } else if (is_num(command[tokens[i].beg])) {
             int n = int_parse(command, tokens[i].beg, tokens[i].len) ;
             if (n == -1) {
                 log_err(PARSE, command.substr(tokens[i].beg, 5) + "... not a valid quantifier") ;
