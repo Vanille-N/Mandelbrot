@@ -38,12 +38,12 @@ If one wishes to call a single command from another scope, it can be cumbersome 
 Instead of
 ```
 cmd> scope map
-cmd> :1
+cmd> 1
 cmd> scope nil
 ```
 it is possible to write
 ```
-cmd> map :1
+cmd> map 1
 ```
 
 
@@ -63,7 +63,7 @@ for any `{cmd1}` that is valid within `{scope2}`.
 
 Since `{scope3} {cmd2}` is a valid command for any `{cmd2}` that is valid within `{scope3}`, then the following command is absolutely valid:
 ```
-cmd> make nil save map rec A+ :50
+cmd> make nil save map rec A+50
 ```
 and could be translated to (assuming current scope is nil)
 ```
@@ -72,10 +72,10 @@ cmd> scope nil
 cmd> scope save
 cmd> scope map
 cmd> scope rec
-cmd> A+ :50
+cmd> A+50
 cmd> scope nil
 ```
-It is perfectly equivalent to `rec A+ :50`.
+It is perfectly equivalent to `rec A+50`.
 
 Note that the above is accurate in the sense that the command in question would specifically NOT be translated to
 ```
@@ -129,7 +129,7 @@ Unlike all of the above, `?` executes differently depending on the current scope
 All scopes provide a `{scope}_help_print()` function that is called when `?` is encountered.
 
 #### `ls`
-If the current scope allows `ls :{int}`, then `ls` translates to `ls :0`.
+If the current scope allows `ls {int}`, then `ls` translates to `ls 0`.
 In the case of `rec`, `ls` displays the current frame settings (resolution, zone shown)
 
 #### `/`
@@ -140,7 +140,7 @@ The scope under which `ls` was called is preserved:
 cmd> scope map
 cmd> save ls         <- displays ls page 0 from save (current scope is map)
 cmd> /               <- displays ls page 1 from save (current scope is map)
-cmd> ls :3           <- displays ls page 3 from map
+cmd> ls 3            <- displays ls page 3 from map
 cmd> scope rec
 cmd> /               <- displays ls page 4 from map (current scope is rec)
 ```
@@ -160,15 +160,11 @@ cmd> stope nil             <- ERROR: Unknown character
 This is mostly an optimization to increase parsing speed, it has no real effect on the user.
 All multi-character keywords are read until the first non-alphabetic character before the validity is checked.
 
-### `:`
-The `:` symbol indicates the beginning of a quantifier, i.e. a positive integer.
-Checks are performed to verify beforehand that no non-numeric characters are encountered before the end, signaled by a blank space.
+### `0-9`
+The characters `0-9` are not valid for keywords, so any sequence of them is interpreted as a quantifier
 ```
-cmd> :10                <- tokenized as {..., NUM, 10, ...}
-cmd> :10000000000000    <- WARNING: Quantifier too long
-cmd> :                  <- tokenized as {..., NUM, 0, ...}
-cmd> :a                 <- ERROR: Critical parsing error
-cmd> :/                 <- ERROR: Critical parsing error
+cmd> 10                <- tokenized as {..., NUM, 10, ...}
+cmd> 10000000000000    <- WARNING: Quantifier too long
 ```
 
 ### `'`
@@ -184,10 +180,12 @@ cmd> 'aaaaaaaaaaaaaaa  <- WARNING: String literal too long
 ### Whitespace
 Tabs are not recognized as valid characters, spaced are allowed everywhere between tokens.
 There is no restriction on the maximum amount of spacing in a command.
-Spaces are required only to end `'` and `:` groups and to separate alphabetic keywords:
+Spaces are required only to end `'` groups and to separate alphabetic keywords:
 ```
 cmd>     scope     nil    <- no problem
-cmd> A+:10                <- spaces are allowed but not required between A/+ and +/:10
+cmd> A+10                 <- spaces are allowed but not required between A/+ and +/10
+cmd> ls1                  <- spaces are allowed but not required between ls/1
+cmd> make122'a            <- spaces are allowed but not required between make/122 and 122/'a
 ```
 
 ### Character limit
@@ -211,19 +209,19 @@ Example: `cmd> scope rec :10 #`, the tokenizer returns `{SCOPE, REC, NUM, 10, HA
 ## Commands
 Explanations of all commands/keywords/constructs available:
 
-### `:{int}` (Quantifier)
+### `{int}` (Quantifier)
 Valid in: `nil`, `map`, `save`, `make`
 
-#### `nil :{int}`
+#### `nil {int}`
 Load corresponding `.meta` file (may trigger `ERROR: No such file`)
 
-#### `map :{int}`
+#### `map {int}`
 Select corresponding color map (may trigger `ERROR: No such file`)
 
-#### `save :{int}`
+#### `save {int}`
 Load corresponding `.save` file (may trigger `ERROR: No such file`)
 
-#### `make :{int}`
+#### `make {int}`
 Set height for output image
 
 ### `'{str}`
@@ -265,7 +263,7 @@ Reset resolution: equivalent to `cmd> make :100`
 #### `rec .`
 Reset frame to initial values: from -2.5 to 0.5 and from -i to i.
 
-### ls :{int}
+### ls {int}
 Valid in: `nil`, `map`, `save`, `make`
 
 Display the given page of:
@@ -274,24 +272,24 @@ Display the given page of:
 - `save` -> list of `.save` files
 - `make` -> list of `.ppm` files
 
-Although `ls :{int}` seems valid in scope `rec`, that is only because when the scope is rec and the parser reads `LS`, it immediately ends the command as discussed previously.
+Although `ls {int}` seems valid in scope `rec`, that is only because when the scope is rec and the parser reads `LS`, it immediately ends the command as discussed previously.
 
 
-### `:{int} #` and `:{int} '{str}`
+### `{int} #` and `{int} '{str}`
 Valid in: `make`
 
-It is possible to execute both instructions sequentially in a single command: `:{int}` will change resolution and `#` or `'{str}` will make a name and create the image immediately afterwards.
+It is possible to execute both instructions sequentially in a single command: `{int}` will change resolution and `#` or `'{str}` will make a name and create the image immediately afterwards.
 
-Note that `cmd> make :{int} '{str}` is equivalent to
+Note that `cmd> make {int} '{str}` is equivalent to
 ```
-cmd> make :{int}
+cmd> make {int}
 cmd> make '{str}
 ```
 In particular, the new resolution affects also future images.
 
-`make '{str} :{int}` is also accepted, but the image will be created immediately afterwards `'{str}` and `:{int} will be ignored.
+`make '{str} {int}` is also accepted, but the image will be created immediately afterwards `'{str}` and `{int} will be ignored.
 
-### `({selec}*{indic}*:{int}*)*`
+### `({selec}*{indic}*{int}*)*`
 Valid in: `rec`
 
 Used to navigate the image:
@@ -317,6 +315,6 @@ Several can be selected at once, modifications will apply to all sides specified
 It determines in which direction the selected sides are moved and affects all previous sides that do not have a direction yet.
 The first takes precedence.
 
-`:{int}` indicates the amount by which the selected sides will be moved (translated internally as a proportion of the total size of the frame). Defaults to 1 if absent. Applied to all sides that do not have a quantifier yet.
+`{int}` indicates the amount by which the selected sides will be moved (translated internally as a proportion of the total size of the frame). Defaults to 1 if absent. Applied to all sides that do not have a quantifier yet.
 
 See `EXAMPLES.pdf` for a somewhat comprehensive list of examples of this mechanism.
