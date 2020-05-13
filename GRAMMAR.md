@@ -11,16 +11,15 @@ Any expression surrounded by other content in the form `prefix{expr}suffix` is t
 Examples:
 - `scope {scope}` can be`scope nil` or `scope map` or `scope rec` ...
 - `'{str}` can become `'abcd` or `'x_y_z` or `'123` ...
-- `{scope} {{scope}_cmd}` becomes `nil {nil_cmd}` or `map {map_cmd}` ... which in turn can become `nil ?` or `nil .` ... or `map :10` or `map ls` ...
+- `{scope} {{scope}_cmd}` becomes `nil {nil_cmd}` or `map {map_cmd}` ... which in turn can become `nil ?` or `nil .` ... or `map 10` or `map ls` ...
 
 `{expr}*` is 0 or more of `{expr}`
-
-Note that `:` and `'` have higher priority than `*`. `:{int}*` means 0 or more of `:{int}` and NOT `:` followed by 0 or more of `{int}` (even though `:` is valid by itself and is translated to `:0`).
 
 ## Description:
 
 ```
 universal :=
+    | scope .
     | scope {scope}
     | {scope} {{scope}_cmd}
     | ~
@@ -43,17 +42,17 @@ scope :=
 nil_cmd :=
     | .
     | #
-    | :{int}
+    | {int}
     | '{str}
-    | ls :{int}
+    | ls {int}
     | {universal}
 ```
 
 ```
 map_cmd :=
     | .
-    | :{int}
-    | ls :{int}
+    | {int}
+    | ls {int}
     | {universal}
 ```
 
@@ -61,8 +60,8 @@ map_cmd :=
 save_cmd :=
     | #
     | '{str}
-    | :{int}
-    | ls :{int}
+    | {int}
+    | ls {int}
     | {universal}
 ```
 
@@ -71,17 +70,17 @@ make_cmd :=
     | .
     | #
     | '{str}
-    | :{int}
-    | :{int} #
-    | :{int} '{str}
-    | ls :{int}
+    | {int}
+    | {int} #
+    | {int} '{str}
+    | ls {int}
     | {universal}
 ```
 
 ```
 rec_cmd :=
     | .
-    | ({selec}*{indic}*:{int}*)*
+    | ({selec}*{indic}*{int}*)*
     | {universal}
 ```
 
