@@ -16,7 +16,7 @@
 *********************************/
 static const int view_hgt = 140 ;
 static const int view_wth = 160 ;
-
+/********************************/
 
 
 
@@ -566,7 +566,7 @@ void focus_change (cmd side, int indic, int quant) {
         view_lt = view_rt ;
         view_rt = tmp ;
     }
-    log_info(NEWFOCUS, "Side " + kw[side] + kw[indic]) ;
+    log_info(NEWFOCUS, "Side " + kw[side] + kw[indic] + " (" + std::to_string(quant) + ")") ;
 }
 
 void ls_nil_print () {
