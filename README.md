@@ -21,3 +21,12 @@ $ ./prog
 
 
 See `LANGUAGE.md` for an overview of the language or `GRAMMAR.md` for an uncommented list of commands and constructs. Help can be accessed from within the script by typing `scope ?` or simply `?`.
+
+Below is a sample of the kind of image that can be generated. All are also available in `img/`
+
+
+<img src="img/bulb.png" width=500>
+<img src="img/zoom3.png" width=500>
+<br><br>
+<img src="img/zoom2.png" width=500>
+<img src="img/zoom1.png" width=500>
