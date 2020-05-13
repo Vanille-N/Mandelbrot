@@ -84,7 +84,7 @@ cmd> scope nil
 cmd> scope save
 cmd> scope map
 cmd> scope rec
-cmd> A+ :50
+cmd> A+50
 cmd> scope rec
 cmd> scope map
 cmd> scope save
@@ -147,7 +147,7 @@ cmd> /               <- displays ls page 4 from map (current scope is rec)
 
 
 ## Parsing
-There are some specific parsing details that are useful to know to use this tool correctly.
+There are some specific parsing details that are useful to know in order to use this tool correctly.
 
 ### Separators
 All non-alphabetic commands are a single character long, so these are easy to parse.
@@ -203,7 +203,7 @@ The graphical interface was made to support commands longer than 50 characters, 
 ### End of a command
 The tokenizer will ask to truncate commands over 50 characters, but there is no guarantee that the parser will read until the end. In fact, the parser has full control over when a command ends and there is no way to force it to read more.
 
-Example: `cmd> scope rec :10 #`, the tokenizer returns `{SCOPE, REC, NUM, 10, HASH}`, but the parser will read `SCOPE`, `REC`, then stop there. No warning is raised.
+Example: `cmd> scope rec 10 #`, the tokenizer returns `{SCOPE, REC, NUM, 10, HASH}`, but the parser will read `SCOPE`, `REC`, then stop there. No warning is raised.
 
 
 ## Commands
@@ -287,7 +287,7 @@ cmd> make '{str}
 ```
 In particular, the new resolution affects also future images.
 
-`make '{str} {int}` is also accepted, but the image will be created immediately afterwards `'{str}` and `{int} will be ignored.
+`make '{str} {int}` is also accepted, but the image will be created immediately afterwards `'{str}` and `{int}` will be ignored.
 
 ### `({selec}*{indic}*{int}*)*`
 Valid in: `rec`
@@ -305,7 +305,7 @@ Used to navigate the image:
 It determines which sides of the image are affected
 Several can be selected at once, modifications will apply to all sides specified.
 
-`{indic} is one of
+`{indic}` is one of
 - `<` (move left)
 - `>` (move right)
 - `^` (move up)
