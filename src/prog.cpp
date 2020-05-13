@@ -118,7 +118,7 @@ static std::vector<rgb> curr_map ;
 
 static std::string command ;
 
-static int * preview ;
+static int preview [view_hgt * view_wth] ;
 static int diverge_min = 0 ;
 
 
@@ -1314,7 +1314,6 @@ int main () {
     kw.link(STR, "'") ;
     kw.link(EXIT, "~") ;
 
-    preview = new int [view_hgt * view_wth] ;
     screen_clear() ;
     // focus_adjust() ;
     //
