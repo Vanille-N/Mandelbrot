@@ -145,3 +145,66 @@ cmd> scope rec
 cmd> /               <- displays ls page 4 from map (current scope is rec)
 ```
 
+
+## Parsing
+There are some specific parsing details that are useful to know to use this tool correctly.
+
+### Separators
+All non-alphabetic commands are a single character long, so these are easy to parse.
+
+Some characters that don't appear in any keyword stop the parsing immediately:
+```
+cmd> spope nil             <- ERROR: Not a valid keyword
+cmd> stope nil             <- ERROR: Unknown character
+```
+This is mostly an optimization to increase parsing speed, it has no real effect on the user.
+All multi-character keywords are read until the first non-alphabetic character before the validity is checked.
+
+### `:`
+The `:` symbol indicates the beginning of a quantifier, i.e. a positive integer.
+Checks are performed to verify beforehand that no non-numeric characters are encountered before the end, signaled by a blank space.
+```
+cmd> :10                <- tokenized as {..., NUM, 10, ...}
+cmd> :10000000000000    <- WARNING: Quantifier too long
+cmd> :                  <- tokenized as {..., NUM, 0, ...}
+cmd> :a                 <- ERROR: Critical parsing error
+cmd> :/                 <- ERROR: Critical parsing error
+```
+
+### `'`
+The `'` symbol indicates the beginning of an identifier, i.e. a string.
+No checks are performed concerning the validity of the string as a filename, and it continues until either the end of the command or a space.
+```
+cmd> 'a                <- tokenized as {..., STR, ...}, "a" is stored in another variable
+cmd> '                 <- ERROR: Critical parsing error
+cmd> 'a 'b             <- WARNING: Name already specified
+cmd> 'aaaaaaaaaaaaaaa  <- WARNING: String literal too long
+```
+
+### Whitespace
+Tabs are not recognized as valid characters, spaced are allowed everywhere between tokens.
+There is no restriction on the maximum amount of spacing in a command.
+Spaces are required only to end `'` and `:` groups and to separate alphabetic keywords:
+```
+cmd>     scope     nil    <- no problem
+cmd> A+:10                <- spaces are allowed but not required between A/+ and +/:10
+```
+
+### Character limit
+The following are arbitrary character limits:
+```c++
+static const int num_maxlen = 7 ;
+static const int str_maxlen = 20 ;
+static const int cmd_maxlen = 50 ;
+```
+These are quite self-explanatory.
+Going over any of these will trigger a `WARNING: {} too long... truncate ? (y/n)`.
+
+The graphical interface was made to support commands longer than 50 characters, but not too much longer: commands over 82 characters will not be fully erased when the interface is refreshed.
+
+### End of a command
+The tokenizer will ask to truncate commands over 50 characters, but there is no guarantee that the parser will read until the end. In fact, the parser has full control over when a command ends and there is no way to force it to read more.
+
+Example: `cmd> scope rec :10 #`, the tokenizer returns `{SCOPE, REC, NUM, 10, HASH}`, but the parser will read `SCOPE`, `REC`, then stop there. No warning is raised.
+
+
