@@ -804,43 +804,34 @@ void tokenize () {
     tokens.clear() ;
     int idx = 0, len = 0 ;
     types_chr curr ;
-    while (idx+len < command.length()) {
+    while (idx < command.length()) {
         //std:: cout << "parsing char " << idx+len << "\n" ;
         //std::cout << "Length:" << len << "\n" ;
-        curr = chr_type(command[idx+len]) ;
+        curr = chr_type(command[idx]) ;
         if (curr == KEYWORD) {
-            //std::cout << "ItsaKW!\n" ;
-            if (idx+len+1 == command.length()) {
-                tokens.push_back({idx, len+1}) ;
-                break ;
-            } else if (chr_type(command[idx+len+1]) == KEYWORD) {
-                len++ ;
-            } else {
-                tokens.push_back({idx, len+1}) ;
-                idx += len+1 ;
-                len = 0 ;
-            }
+            len = 0;
+            while (idx+len < command.length() && chr_type(command[idx+(++len)]) == KEYWORD) {}
+            tokens.push_back({idx, len}) ;
+            idx += len ;
         } else if (curr == SYMBOL || curr == SELECTOR || curr == INDICATOR) {
-            //std::cout << "ItsaSYMBOL!\n" ;
             tokens.push_back({idx, 1}) ;
             idx++ ;
         } else if (curr == MODIFIER) {
-            //std::cout << "ItsaMODIF!\n" ;
-            while (idx+len < command.length() && chr_type(command[idx+len]) != BLANK) {
-                len++ ;
-            }
+            len = 0 ;
+            while (idx+len < command.length() && chr_type(command[idx+(++len)]) != BLANK) {}
             tokens.push_back({idx, len}) ;
             idx += len ;
+        } else if (curr == NUMERIC) {
             len = 0 ;
+            while (idx+len < command.length() && chr_type(command[idx+(++len)]) == NUMERIC) {}
+            tokens.push_back({idx, len}) ;
+            idx += len;
         } else if (curr == BLANK) {
-            //std::cout << "blank...\n" ;
             idx++ ;
         } else if (curr == UNKNOWN) {
-            //std::cout << "wtf?\n" ;
             tokens.push_back({-1, -1}) ;
             log_info(PARSE, "'" + command.substr(idx+len, 1) + "' not recognized") ;
             break ;
-            //std::cout << "\n\n\n\n\n\n\n\n<<<" + command.substr(idx+len, 1) + ">>>\n" ;
         }
     }
     // for (int i = 0; i < tokens.size(); i++) {
