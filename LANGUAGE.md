@@ -208,3 +208,115 @@ The tokenizer will ask to truncate commands over 50 characters, but there is no 
 Example: `cmd> scope rec :10 #`, the tokenizer returns `{SCOPE, REC, NUM, 10, HASH}`, but the parser will read `SCOPE`, `REC`, then stop there. No warning is raised.
 
 
+## Commands
+Explanations of all commands/keywords/constructs available:
+
+### `:{int}` (Quantifier)
+Valid in: `nil`, `map`, `save`, `make`
+
+#### `nil :{int}`
+Load corresponding `.meta` file (may trigger `ERROR: No such file`)
+
+#### `map :{int}`
+Select corresponding color map (may trigger `ERROR: No such file`)
+
+#### `save :{int}`
+Load corresponding `.save` file (may trigger `ERROR: No such file`)
+
+#### `make :{int}`
+Set height for output image
+
+### `'{str}`
+Valid in: `nil`, `save`, `make`
+
+#### `nil '{str}`
+Save current meta-settings in a new file with given name
+
+#### `save '{str}`
+Save current frame in a new file with given name
+
+#### `make '{str}`
+Launch calculations to create a new image with given name.
+
+### `#`
+Valid in: same as `'{str}`
+
+A new pseudo-random name is created and used as if it were provided by the user.
+
+This is safe to use as it will check that another file with the same name does not already exist.
+
+### `.`
+Valid in: `nil`, `map`, `make`, `rec`
+
+#### `nil .`
+Full reset: equivalent to
+```
+cmd> map .
+cmd> make .
+cmd> rec .
+```
+
+#### `map .`
+Reset map: equivalent to `cmd> map :0`
+
+#### `make .`
+Reset resolution: equivalent to `cmd> make :100`
+
+#### `rec .`
+Reset frame to initial values: from -2.5 to 0.5 and from -i to i.
+
+### ls :{int}
+Valid in: `nil`, `map`, `save`, `make`
+
+Display the given page of:
+- `nil` -> list of `.meta` files
+- `map` -> list of color maps
+- `save` -> list of `.save` files
+- `make` -> list of `.ppm` files
+
+Although `ls :{int}` seems valid in scope `rec`, that is only because when the scope is rec and the parser reads `LS`, it immediately ends the command as discussed previously.
+
+
+### `:{int} #` and `:{int} '{str}`
+Valid in: `make`
+
+It is possible to execute both instructions sequentially in a single command: `:{int}` will change resolution and `#` or `'{str}` will make a name and create the image immediately afterwards.
+
+Note that `cmd> make :{int} '{str}` is equivalent to
+```
+cmd> make :{int}
+cmd> make '{str}
+```
+In particular, the new resolution affects also future images.
+
+`make '{str} :{int}` is also accepted, but the image will be created immediately afterwards `'{str}` and `:{int} will be ignored.
+
+### `({selec}*{indic}*:{int}*)*`
+Valid in: `rec`
+
+Used to navigate the image:
+
+`{selec}` is one of
+- `L` (left)
+- `R` (right)
+- `U` (up)
+- `D` (down)
+- `H` (horizontal)
+- `V` (vertical)
+- `A` (all)
+It determines which sides of the image are affected
+Several can be selected at once, modifications will apply to all sides specified.
+
+`{indic} is one of
+- `<` (move left)
+- `>` (move right)
+- `^` (move up)
+- `_` (move down)
+- `-` (zoom out)
+- `+` (zoom in)
+It determines in which direction the selected sides are moved and affects all previous sides that do not have a direction yet.
+The first takes precedence.
+
+`:{int}` indicates the amount by which the selected sides will be moved (translated internally as a proportion of the total size of the frame). Defaults to 1 if absent. Applied to all sides that do not have a quantifier yet.
+
+See `EXAMPLES.pdf` for a somewhat comprehensive list of examples of this mechanism.
