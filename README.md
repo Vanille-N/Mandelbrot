@@ -25,8 +25,6 @@ See `LANGUAGE.md` for an overview of the language or `GRAMMAR.md` for an uncomme
 Below is a sample of the kind of image that can be generated. All of them are also available in `img/`
 
 
-<img src="img/bulb.png" width=400>
-<img src="img/zoom3.png" width=400>
-<br><br>
-<img src="img/zoom2.png" width=400>
-<img src="img/zoom1.png" width=400>
+<img src="img/bulb.png" width=400> <img src="img/zoom3.png" width=400>
+<br>
+<img src="img/zoom2.png" width=400> <img src="img/zoom1.png" width=400>
