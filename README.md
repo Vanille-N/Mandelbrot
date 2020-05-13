@@ -4,24 +4,20 @@ C++ script focused on creating images of the Mandelbrot set using a language des
 
 Disclaimer: This project relies heavily on ANSI escape codes for interactive rendering. Correct execution has not been tested anywhere other than the default Terminal for Ubuntu 18.04+.
 
-It is recommended to use full screen and reduce the font size for comfort.
+It is recommended to use full screen and reduce the font size for comfort, or edit a few constants at the beginning of the source file.
 
-How to use:
+How to build and run:
 
 ```
 $ g++ -o prog prog.cpp
 $ ./prog
 ```
+or
+```
+$ chmod u+x make
+$ ./make
+$ ./prog
+```
 
 
-See `grammar.txt` for an overview of the language. Help can be accessed from within the script, and the explanations inside `.help.txt` are detailed enough that a presentation of the language is unnecessary. Just know that you can use
-```
-cmd> nil ?
-cmd> scope ?
-cmd> make ?
-cmd> rec ?
-cmd> load ?
-cmd> save ?
-cmd> map ?
-```
-to get pretty much all the information you need.
+See `LANGUAGE.md` for an overview of the language or `GRAMMAR.md` for an uncommented list of commands and constructs. Help can be accessed from within the script by typing `scope ?` or simply `?`.
