@@ -4,15 +4,31 @@ It is not recommended to modify it.
 <SCOPE>
 Printing help for keyword `scope`
 
-`scope` allows to change current scope.
-
-Syntax:
-    | scope ?
-        print help for `scope`
+Universal scope:
     | scope {scope}
         change scope to {scope}
     | scope .
         reset scope (equivalent to `scope nil`)
+    | {scope} {{scope}_cmd}
+        temporary access to another scope
+    | ~
+        quit
+    |
+        do nothing
+    | ?
+        print help
+    | /
+        display next ls page
+
+For more information:
+cmd> nil ?
+cmd> rec ?
+cmd> make ?
+cmd> map ?
+cmd> save ?
+
+or read LANGUAGE.md
+
 <END>
 
 <MAP>
@@ -26,15 +42,18 @@ pixel resolution.
 Color 0 is to be used for points that do not diverge.
 
 Syntax:
-    | ?
-        print help for `map`
     | .
         reset settings for scope `map`
         (equivalent to `0`)
-    | :{int}
+    | {int}
         select map number {int}
-    | ls :{int}!
+    | ls
+    | ls {int}
         show {int}'th page, default is 0.
+
+For more information:
+cmd> scope ?
+or read LANGUAGE.md
 <END>
 
 <SAVE>
@@ -44,16 +63,19 @@ To avoid having to recreate all settings, files can be created
 in order to restore environment to a previously set state.
 
 Syntax:
-    | ?
-        print help for `save`
     | #
         hash new unique filename and save settings.
     | '{str}
         create file named {str}, and use it to save settings
-    | :{int}
+    | {int}
         load {int}'th file
-    | ls :{int}!
-        show {int}'th page, default is 0.
+    | ls
+    | ls {int}
+        show {int}'th page, default is 0
+
+For more information:
+cmd> scope ?
+or read LANGUAGE.md
 <END>
 
 <REC>
@@ -62,14 +84,16 @@ Printing help for keyword `rec`
 Change view rectangle.
 
 Syntax:
-    | ?
-        show help for `rec`
     | .
         reset settings for `rec`
     | ls
         show current settings
     | ({selector}*{indicator}*{quantifier}*)*
         apply changes to the view
+
+For more information:
+cmd> scope ?
+or read LANGUAGE.md
 <END>
 
 <MAKE>
@@ -78,22 +102,25 @@ Printing help for keyword `make`
 Create image of the Mandelbrot set.
 
 Syntax:
-    | ?
-        show help for `make`
     | .
         reset `make` settings
-    | ls :{int}!
+    | ls
+    | ls {int}
         show all files already created
         (page {int}, default 0)
-    | :{int}
+    | {int}
         set resolution to {int}
     | #
         hash new name and create file
     | '{str}
         use {str} as name
-    | :{int} #
-    | :{int} '{str}
+    | {int} #
+    | {int} '{str}
         execute sequentially as above
+
+For more information:
+cmd> scope ?
+or read LANGUAGE.md
 <END>
 
 <NIL>
@@ -102,11 +129,18 @@ Root help
 Syntax:
     | .
         reset all settings
-    | {nil_expr}
-        interprete according to grammar
-        see description in file `grammar.txt`
-    | ~
-        quit
-    | /
-        next ls page (fails if no page displayed)
+    | #
+        hash new name and create file
+    | '{str}
+        use {str} as name
+    | {int}
+        open {int}'th settings file
+    | ls
+    | ls {int}
+        show all files already created
+        (page {int}, default 0)
+
+For more information:
+cmd> scope ?
+or read LANGUAGE.md
 <END>
