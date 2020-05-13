@@ -1,3 +1,5 @@
 *.ppm
 prog
 .x.txt
+*.meta
+*.save
