@@ -28,3 +28,5 @@ Below is a sample of the kind of image that can be generated. All of them are al
 <img src="img/bulb.png" width=400> <img src="img/zoom3.png" width=400>
 <br>
 <img src="img/zoom2.png" width=400> <img src="img/zoom1.png" width=400>
+<br>
+<img src="img/zoom5.png" width=400> <img src="img/zoom4.png" width=400>
