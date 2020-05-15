@@ -3,3 +3,4 @@ prog
 .x.txt
 *.meta
 *.save
+local-*
