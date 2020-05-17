@@ -121,6 +121,8 @@ By specifying the name of the target scope, one can access any command.
 #### `~`
 Quit (asks for y/n confirmation)
 
+It is possible to force quit without confirmation by entering `~~`.
+
 #### ` `
 The empty command is always valid
 
