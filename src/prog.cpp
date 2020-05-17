@@ -58,9 +58,9 @@ std::string Assoc::operator[] (int num) {
 }
 
 struct rgb {
-    int R ;
-    int G ;
-    int B ;
+    int r ;
+    int g ;
+    int b ;
 };
 
 enum cmd {SCOPE=-1000, NIL, REC, MAP, MAKE, SAVE, LS, HELP, RESET, HASH, NEXT, LSIDE, RSIDE, USIDE, DSIDE, HSIDE, VSIDE,
@@ -153,11 +153,8 @@ void view_clear () {
     }
 }
 
-// CALCULATIONS
-
 void resol_set (double resol) {
     pic_vresol = resol ;
-    //std::cout << pic_vresol ;
 }
 
 char random_chr () {
@@ -247,7 +244,6 @@ void view_display () {
 }
 
 void preview_redraw () {
-    view_clear() ;
     auto hspace = linspace(view_lt, view_rt, view_wth) ;
     auto vspace = linspace(view_hi, view_lo, view_hgt) ;
     // Note: hi->lo and not lo->hi to compensate for the fact that
@@ -282,7 +278,6 @@ void image_make () {
     int pxdrawn = 0 ;
     int mindv = diverge_iter, maxdv = 0 ;
     int n ;
-    //std::vector<int> cnt (diverge_iter) ;
     for (int i = 0; i < I; i++) {
         for (int j = 0; j < J; j++) {
             n = diverge(std::complex<double> (X[j], Y[i])) ;
@@ -290,7 +285,6 @@ void image_make () {
             otmp << n << " " ;
             if (n < mindv) mindv = n ;
             if (n > maxdv) maxdv = n ;
-            //cnt[n]++ ;
             if (++pxdrawn % corresp == 0) {
                 indic_j++ ;
                 if (indic_j == view_wth) {
@@ -314,29 +308,6 @@ void image_make () {
     std::ofstream pic (curr_name + ".ppm") ;
     std::ifstream itmp ("tmp") ;
     pic << "P3\n" << J << " " << I << "\n255\n" ;
-    //std::vector<int> spread (diverge_iter) ;
-    // for (int i = 0; i < diverge_iter; i++) {
-    //     std::cout << cnt[i] << " " ;
-    // } std::cout << "\n" ;
-    // Turn cnt to a cumulative
-    // for (int i = 1; i < diverge_iter; i++) {
-    //     cnt[i] += cnt[i-1] ;
-    // }
-    // int a = 0 ;
-    // int N = I*J ;
-    // for (int i = 0; i < diverge_iter; i++) {
-    //     if (a < colors_nb-1) a++ ;
-    //     while (a < colors_nb-1 && cnt[a] < i * N / colors_nb) {
-    //         a++ ;
-    //     }
-    //     spread[i] = a ;
-    // }
-    // for (int i = 0; i < diverge_iter; i++) {
-    //     std::cout << cnt[i] << " " ;
-    // } std::cout << "\n" ;
-    // for (int i = 0; i < diverge_iter; i++) {
-    //     std::cout << "(i:"<< i << " s:" << spread[i] << ") " ;
-    // } std::cout << "\n" ;
     rgb C ;
     for (int i = 0; i < I; i++) {
         for (int j = 0; j < J; j++) {
@@ -346,7 +317,7 @@ void image_make () {
             } else {
                 C = curr_map[colors_nb - (int)std::max(std::ceil((colors_nb-1) * ((double)n - mindv) / ((maxdv-1) - mindv)), 1.)] ;
             }
-            pic << C.R << " " << C.G << " " << C.B << " " ;
+            pic << C.r << " " << C.g << " " << C.b << " " ;
         }
         pic << "\n" ;
     }
@@ -1315,12 +1286,6 @@ int main () {
     kw.link(EXIT, "~") ;
 
     screen_clear() ;
-    // focus_adjust() ;
-    //
-    // focus_change(LSIDE, ZOOMOUT, 10) ;
-    // focus_change(USIDE, ZOOMOUT, 20) ;
-    // focus_change(DSIDE, ZOOMOUT, 10) ;
-    // focus_change(RSIDE, ZOOMOUT, 10) ;
 
     focus_adjust() ;
     preview_redraw() ;
@@ -1329,16 +1294,12 @@ int main () {
     map_choose(0) ;
 
     do {
-        //db << "OK\n" ;
         prompt_make() ;
         if (log_hist.size() > 0) {
             log_redraw() ;
         }
         getline(std::cin, command) ;
-        //std::cout << "read line\n" ;
-        //std::cout << "<<" << command << ">>\n" ;
         parse() ;
-        //std::cout << command ;
     } while (execute()) ;
 
     screen_clear() ;
