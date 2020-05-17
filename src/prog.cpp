@@ -69,7 +69,7 @@ enum cmd {SCOPE=-1000, NIL, REC, MAP, MAKE, SAVE, LS, HELP, RESET, HASH, NEXT, L
 enum msg_log {UNKCHR, NOSELEC, NOINDIC, NOFILE, PARSE, NOSUCHKW,
     RESELEC, REINDIC, LONGQUANT, LONGCMD, LONGNAME, FEXISTS, QUIT, RENAME,
     DEFQUANT, DONE, NEWSCOPE, LOADED, SAVED, NEWMAP, BUILT, EMPTY,
-    SIGLS, SIGRESET, SIGHELP, NEWFOCUS, EXCEPTION
+    SIGLS, SIGRESET, SIGHELP, NEWFOCUS, EXCEPTION, FLIP
   } ;
 
 static Assoc kw ;
@@ -122,13 +122,24 @@ static int preview [view_hgt * view_wth] ;
 static int diverge_min = 0 ;
 
 
+void cursor (int i, int j) {
+    printf("\033[%d;%dH", i, j) ;
+}
+
+void plaintext() {
+    printf("\033[0m") ;
+}
+
 void refresh () {
-    printf("\033[1;1H\n") ;
+    plaintext() ;
+    cursor(1, 1) ;
+    putchar('\n') ;
 }
 
 void log_clear () {
+    plaintext() ;
     for (int i = 0; i < view_hgt; i++) {
-        printf("\033[%d;%dH", log_vpos+i, log_hpos) ;
+        cursor(log_vpos+i, log_hpos) ;
         for (int j = 0; j < 80; j++) {
             putchar(' ') ;
         }
@@ -136,8 +147,9 @@ void log_clear () {
 }
 
 void prompt_clear () {
+    plaintext() ;
     for (int i = 1; i < 5; i++) {
-        printf("\033[%d;%dH", i, 1) ;
+        cursor(i, 1) ;
         for (int j = 0; j < 90; j++) {
             putchar(' ') ;
         }
@@ -145,8 +157,9 @@ void prompt_clear () {
 }
 
 void view_clear () {
+    plaintext() ;
     for (int i = 0; i < view_hgt; i++) {
-        printf("\033[%d;%dH", view_vpos+i, view_hpos) ;
+        cursor(view_vpos+i, view_hpos) ;
         for (int j = 0; j < view_wth; j++) {
             putchar(' ') ;
         }
@@ -211,18 +224,12 @@ std::vector<double> linspace (double a, double b, int n) {
     return v ;
 }
 
-int view_colorspread (int dv) {
-    int prop = (int)std::ceil(7.0 * (dv - diverge_min) / (diverge_iter - diverge_min)) ;
-    switch (prop) {
-        case 0: return 34 ;
-        case 1: return 94 ;
-        case 2: return 36 ;
-        case 3: return 96 ;
-        case 4: return 97 ;
-        case 5: return 37 ;
-        case 6: return 90 ;
-        case 7: return 30 ;
-        default: return 30 ;
+rgb view_colorspread (int dv) {
+    int prop = (int)std::ceil(256 * (dv - diverge_min) / (diverge_iter - diverge_min)) ;
+    if (prop < 128) {
+        return {0, 0, prop * 2} ;
+    } else {
+        return {(prop - 128) * 2, (prop - 128) * 2, 255} ;
     }
 }
 
@@ -233,26 +240,38 @@ void view_display () {
         }
     }
     for (int i = 0; i < view_hgt/2; i++) {
-        printf("\033[%d;%dH", view_vpos+i, view_hpos) ;
+        cursor(view_vpos+i, view_hpos) ;
         for (int j = 0; j < view_wth; j++) {
-            int bg = 10 + view_colorspread(preview[2*i*view_wth + j]) ;
-            int fg = view_colorspread(preview[(2*i+1)*view_wth + j]) ;
-            printf("\033[%d;%dm▄", bg, fg) ;
+            rgb bg = view_colorspread(preview[2*i*view_wth + j]) ;
+            rgb fg = view_colorspread(preview[(2*i+1)*view_wth + j]) ;
+            printf("\033[48;2;%d;%d;%dm\033[38;2;%d;%d;%dm▄", bg.r, bg.g, bg.b, fg.r, fg.g, fg.b) ;
         }
     }
-    printf("\033[0m") ;
+    plaintext() ;
+}
+
+double drand () {
+    return (double)rand() / (double)RAND_MAX ;
 }
 
 void preview_redraw () {
     auto hspace = linspace(view_lt, view_rt, view_wth) ;
     auto vspace = linspace(view_hi, view_lo, view_hgt) ;
+    double xvar = (view_rt - view_lt) / view_wth ;
+    double yvar = (view_hi - view_lo) / view_hgt ;
     // Note: hi->lo and not lo->hi to compensate for the fact that
     // i increases downward while y increases upward !
     for (int i = 0; i < view_hgt; i++) {
         for (int j = 0; j < view_wth; j++) {
-            preview[i*view_wth + j] = diverge_iter - diverge(std::complex<double> (hspace[j], vspace[i])) ;
+            int nb_samples = 5 ;
+            int dv_tot = 0 ;
+            for (int k = 0; k < nb_samples; k++) {
+                dv_tot += diverge(std::complex<double>(hspace[j] + drand()*xvar, vspace[i] + drand()*yvar)) ;
+            }
+            preview[i*view_wth + j] = diverge_iter - dv_tot / nb_samples ;
         }
     }
+    view_clear() ;
     view_display() ;
 }
 
@@ -281,7 +300,10 @@ void image_make () {
     for (int i = 0; i < I; i++) {
         for (int j = 0; j < J; j++) {
             n = diverge(std::complex<double> (X[j], Y[i])) ;
-            printf("\033[%d;%dH\033[102m \033[1;1H\n", view_vpos+indic_i, view_hpos+indic_j) ;
+            cursor(view_vpos+indic_i, view_hpos+indic_j) ;
+            printf("\033[102m ") ;
+            cursor(1, 1) ;
+            putchar('\n') ;
             otmp << n << " " ;
             if (n < mindv) mindv = n ;
             if (n > maxdv) maxdv = n ;
@@ -297,13 +319,17 @@ void image_make () {
     otmp.close() ;
     while (indic_i*2 < view_hgt) {
         while (indic_j < view_wth) {
-            printf("\033[%d;%dH\033[102m \033[1;1H\n", view_vpos+indic_i, view_hpos+indic_j) ;
+            cursor(view_vpos+indic_i, view_hpos+indic_j) ;
+            printf("\033[102m ") ;
+            cursor(1, 1) ;
+            putchar('\n') ;
             indic_j++ ;
         }
         indic_i++;
         indic_j = 0 ;
     }
-    printf("\033[1;1H\033[0m") ;
+    cursor(1, 1) ;
+    plaintext() ;
     // Calculations done, now convert to an image !
     std::ofstream pic (curr_name + ".ppm") ;
     std::ifstream itmp ("tmp") ;
@@ -324,22 +350,26 @@ void image_make () {
     itmp.close() ;
     pic.close() ;
     system("rm tmp") ;
+    preview_redraw() ;
 }
 
-// GRAPHIC OUTPUT
 void screen_clear () {
     std::system("clear") ;
 }
 
 void prompt_make () {
     prompt_clear() ;
-    printf("\033[2;5Hcmd\033[5m> \033[0m") ;
-    printf("\033[3;7HCurrently inside scope ") ;
+    cursor(2, 5) ;
+    printf("cmd\033[5m> ") ;
+    plaintext() ;
+    cursor(3, 7) ;
+    printf("Currently inside scope ") ;
     for (int i = 0; i < kw[curr_scope].length(); i++) {
         putchar(kw[curr_scope][i]) ;
     }
     refresh() ;
-    printf("\033[2;10H\033[0m") ;
+    cursor(2, 10) ;
+    printf("\033[33;1m") ;
 }
 
 std::string msg_header(msg_log m) {
@@ -371,6 +401,7 @@ std::string msg_header(msg_log m) {
         case SIGRESET:  return "\033[34;1mINFO:\033[0m Asked for reset                   " ;
         case SIGHELP:   return "\033[34;1mINFO:\033[0m Asked for help                    " ;
         case NEWFOCUS:  return "\033[34;1mINFO:\033[0m Adjusting focus                   " ;
+        case FLIP:      return "\033[34;1mINFO:\033[0m Focus was flipped                 " ;
         default:        return "" ;
     }
 }
@@ -378,8 +409,9 @@ std::string msg_header(msg_log m) {
 void log_redraw () {
     int L = log_vpos, C = log_hpos ;
     log_clear() ;
+    plaintext() ;
     for (int i = log_hist.size()-1; i >= 0; i--) {
-        printf("\033[%d;%dH", L-i+(int)log_hist.size(), C) ;
+        cursor(L-i+(int)log_hist.size(), C) ;
         std::cout << log_hist[i] ;
     }
     prompt_make() ;
@@ -516,28 +548,19 @@ void nil_reset () {
     rec_reset() ;
 }
 
-void focus_change (cmd side, int indic, int quant) {
+double calc_newfocus (cmd side, int indic, int quant) {
     if (quant == -1) {
         quant = 1 ;
-        log_info(DEFQUANT, "1") ;
-    }
-    switch (side) {
-        case LSIDE: view_lt += view_hdiv * quant * (indic==ZOOMIN ? +1 : -1) ; break ;
-        case RSIDE: view_rt += view_hdiv * quant * (indic==ZOOMIN ? -1 : +1) ; break ;
-        case USIDE: view_hi += view_vdiv * quant * (indic==ZOOMIN ? -1 : +1) ; break ;
-        case DSIDE: view_lo += view_vdiv * quant * (indic==ZOOMIN ? +1 : -1) ; break ;
-    }
-    if (view_lo > view_hi) {
-        double tmp = view_hi ;
-        view_hi = view_lo ;
-        view_lo = tmp ;
-    }
-    if (view_lt > view_rt) {
-        double tmp = view_lt ;
-        view_lt = view_rt ;
-        view_rt = tmp ;
+        log_info(DEFQUANT, "1 was inserted") ;
     }
     log_info(NEWFOCUS, "Side " + kw[side] + kw[indic] + " (" + std::to_string(quant) + ")") ;
+    switch (side) {
+        case LSIDE: return view_lt + view_hdiv * quant * (indic==ZOOMIN ? +1 : -1) ;
+        case RSIDE: return view_rt + view_hdiv * quant * (indic==ZOOMIN ? -1 : +1) ;
+        case USIDE: return view_hi + view_vdiv * quant * (indic==ZOOMIN ? -1 : +1) ;
+        case DSIDE: return view_lo + view_vdiv * quant * (indic==ZOOMIN ? +1 : -1) ;
+        default: return 0. ;
+    }
 }
 
 void ls_nil_print () {
@@ -545,17 +568,24 @@ void ls_nil_print () {
     view_clear() ;
     ls_nil_read() ;
     int id = curr_lspage * entry_nb ;
-    printf("\033[%d;%dHShowing page %d for NIL", view_vpos, view_hpos, curr_lspage) ;
+    plaintext() ;
+    cursor(view_vpos, view_hpos) ;
+    printf("Showing page %d for nil", curr_lspage) ;
     int i ;
     for (i = 0; i < std::min((int)ls_text.size()-id, entry_nb); i++) {
-        printf("\033[%d;%dH\033[1m%d: \033[0m", view_vpos+2+i, view_hpos, id+i) ;
+        cursor(view_vpos+2+i, view_hpos) ;
+        plaintext() ;
+        printf("\033[1m%d: ", id+i) ;
+        printf("\033[33m") ;
         for (int j = 0; j < ls_text[id+i].length(); j++) {
             putchar(ls_text[id+i][j]) ;
         }
     }
     if (i == 0) {
-        printf("\033[%d;%dHEmpty", view_vpos+2, view_hpos) ;
+        cursor(view_vpos+2, view_hpos) ;
+        printf("Empty") ;
     }
+    plaintext() ;
 }
 
 void ls_save_print () {
@@ -563,28 +593,41 @@ void ls_save_print () {
     view_clear() ;
     ls_save_read() ;
     int id = curr_lspage * entry_nb ;
-    printf("\033[%d;%dHShowing page %d for SAVE", view_vpos, view_hpos, curr_lspage) ;
+    plaintext() ;
+    cursor(view_vpos, view_hpos) ;
+    printf("Showing page %d for save", curr_lspage) ;
     int i ;
     for (i = 0; i < std::min((int)ls_text.size()-id, entry_nb); i++) {
-        printf("\033[%d;%dH\033[1m%d: \033[0m", view_vpos+2+i, view_hpos, id+i) ;
+        cursor(view_vpos+2+i, view_hpos) ;
+        plaintext() ;
+        printf("\033[1m%d: ", id+i) ;
+        printf("\033[33m") ;
         for (int j = 0; j < ls_text[id+i].length(); j++) {
             putchar(ls_text[id+i][j]) ;
         }
     }
     if (i == 0) {
-        printf("\033[%d;%dHEmpty", view_vpos+2, view_hpos) ;
+        cursor(view_vpos+2, view_hpos) ;
+        printf("Empty") ;
     }
+    plaintext() ;
 }
 
 void ls_rec_print () {
     ls_scope = REC ;
     view_clear() ;
     focus_adjust() ;
-    printf("\033[%d;%dHCurrent settings for REC", view_vpos, view_hpos) ;
-    printf("\033[%d;%dHSize (in pixels): vertical %d ; horizontal %d", view_vpos+2, view_hpos, (int)std::ceil(pic_vresol), (int)std::ceil(pic_hresol)) ;
-    printf("\033[%d;%dHShowing complex plane", view_vpos+3, view_hpos) ;
-    printf("\033[%d;%dHfrom %f+%fi", view_vpos+4, view_hpos, view_lt, view_lo) ;
-    printf("\033[%d;%dHto %f+%fi", view_vpos+5, view_hpos, view_rt, view_hi) ;
+    plaintext() ;
+    cursor(view_vpos, view_hpos) ;
+    printf("Current settings for rec") ;
+    cursor(view_vpos+2, view_hpos) ;
+    printf("Size (in pixels): vertical %d ; horizontal %d", (int)std::ceil(pic_vresol), (int)std::ceil(pic_hresol)) ;
+    cursor(view_vpos+3, view_hpos) ;
+    printf("Showing complex plane") ;
+    cursor(view_vpos+4, view_hpos) ;
+    printf("    from %f+%fi", view_lt, view_lo) ;
+    cursor(view_vpos+5, view_hpos) ;
+    printf("    to %f+%fi", view_rt, view_hi) ;
 }
 
 void ls_make_print () {
@@ -592,22 +635,33 @@ void ls_make_print () {
     view_clear() ;
     ls_make_read() ;
     int id = curr_lspage * entry_nb ;
-    printf("\033[%d;%dHShowing page %d for MAKE", view_vpos, view_hpos, curr_lspage) ;
+    plaintext() ;
+    cursor(view_vpos, view_hpos) ;
+    printf("Showing page %d for make", curr_lspage) ;
     int i ;
     for (i = 0; i < std::min((int)ls_text.size()-id, entry_nb); i++) {
-        printf("\033[%d;%dH\033[1m%d: \033[0m", view_vpos+2+i, view_hpos, id+i) ;
+        cursor(view_vpos+2+i, view_hpos) ;
+        plaintext() ;
+        printf("\033[1m%d: ", id+i) ;
+        printf("\033[33m") ;
         for (int j = 0; j < ls_text[id+i].length(); j++) {
             putchar(ls_text[id+i][j]) ;
         }
     }
     if (i == 0) {
-        printf("\033[%d;%dHEmpty", view_vpos+2, view_hpos) ;
+        cursor(view_vpos+2, view_hpos) ;
+        printf("Empty") ;
     }
+    plaintext() ;
     focus_adjust() ;
-    printf("\033[%d;%dHResolution: horizontal %d", view_vpos+entry_nb+5, view_hpos, (int)std::ceil(pic_hresol)) ;
-    printf("\033[%d;%dH            vertical   %d", view_vpos+entry_nb+6, view_hpos, (int)std::ceil(pic_vresol)) ;
-    printf("\033[%d;%dHDiverge iter: %d", view_vpos+entry_nb+7, view_hpos, diverge_iter) ;
-    printf("\033[%d;%dHdiverge radius: %d", view_vpos+entry_nb+8, view_hpos, (int)std::ceil(diverge_radius)) ;
+    cursor(view_vpos+entry_nb+5, view_hpos) ;
+    printf("Resolution: horizontal %d", (int)std::ceil(pic_hresol)) ;
+    cursor(view_vpos+entry_nb+6, view_hpos) ;
+    printf("            vertical   %d", (int)std::ceil(pic_vresol)) ;
+    cursor(view_vpos+entry_nb+7, view_hpos) ;
+    printf("Diverge iter: %d", diverge_iter) ;
+    cursor(view_vpos+entry_nb+8, view_hpos) ;
+    printf("Diverge radius: %d", (int)std::ceil(diverge_radius)) ;
 }
 
 void ls_map_print () {
@@ -615,24 +669,31 @@ void ls_map_print () {
     view_clear() ;
     ls_map_read() ;
     int id = curr_lspage * entry_nb ;
-    printf("\033[%d;%dHShowing page %d for MAP", view_vpos, view_hpos, curr_lspage) ;
+    plaintext() ;
+    cursor(view_vpos, view_hpos) ;
+    printf("Showing page %d for map", curr_lspage) ;
     int i ;
     for (i = 0; i < std::min((int)ls_colors.size()-id, entry_nb); i++) {
-        printf("\033[%d;%dH\033[0m\033[1m%d:", view_vpos+2+i, view_hpos, id+i) ;
-        printf("\033[%d;%dH\033[0m", view_vpos+2+i, view_hpos+5) ;
+        cursor(view_vpos+2+i, view_hpos) ;
+        plaintext() ;
+        printf("\033[1m%d:", id+i) ;
+        cursor(view_vpos+2+i, view_hpos+5) ;
         for (int j = 0; j < ls_colors[id+i].size(); j++) {
             auto col = ls_colors[id+i][j] ;
-            printf("\033[38;2;%d;%d;%dm█", col.R, col.G, col.B) ;
+            printf("\033[38;2;%d;%d;%dm█", col.r, col.g, col.b) ;
         }
     }
     if (i == 0) {
-        printf("\033[%d;%dHEmpty", view_vpos+2, view_hpos) ;
+        cursor(view_vpos+2, view_hpos) ;
+        printf("Empty") ;
     }
-    printf("\033[%d;%dH\033[0mCurrently selected:", view_vpos+entry_nb+5, view_hpos) ;
-    printf("\033[%d;%dH\033[0m", view_vpos+entry_nb+6, view_hpos) ;
+    cursor(view_vpos+entry_nb+5, view_hpos) ;
+    plaintext() ;
+    printf("Currently selected:") ;
+    cursor(view_vpos+entry_nb+6, view_hpos) ;
     for (int j = 0; j < curr_map.size(); j++) {
         auto col = curr_map[j] ;
-        printf("\033[38;2;%d;%d;%dm█", col.R, col.G, col.B) ;
+        printf("\033[38;2;%d;%d;%dm█", col.r, col.g, col.b) ;
     }
 }
 
@@ -648,7 +709,7 @@ void help_print (std::string indic, std::string term) {
         } else if (printing && line == term) {
             return ;
         } else if (printing) {
-            printf("\033[%d;%dH", view_vpos+cnt, view_hpos) ;
+            cursor(view_vpos+cnt, view_hpos) ;
             for (int i = 0; i < line.length(); i++) {
                 putchar(line[i]) ;
             }
@@ -801,7 +862,7 @@ void tokenize () {
             idx++ ;
         } else if (curr == UNKNOWN) {
             tokens.push_back({-1, -1}) ;
-            log_info(PARSE, "'" + command.substr(idx+len, 1) + "' not recognized") ;
+            log_info(PARSE, "'" + command.substr(idx, 1) + "' not recognized") ;
             break ;
         }
     }
@@ -1173,10 +1234,35 @@ int execute () {
                 }
                 act:
                 focus_adjust() ;
-                if (chL.active && chL.indicator != -1) focus_change(LSIDE, chL.indicator, chL.quantifier) ;
-                if (chR.active && chR.indicator != -1) focus_change(RSIDE, chR.indicator, chR.quantifier) ;
-                if (chU.active && chU.indicator != -1) focus_change(USIDE, chU.indicator, chU.quantifier) ;
-                if (chD.active && chD.indicator != -1) focus_change(DSIDE, chD.indicator, chD.quantifier) ;
+                double new_lt = view_lt, new_rt = view_rt, new_hi = view_hi, new_lo = view_lo ;
+                if (chL.active && chL.indicator != -1) {
+                    new_lt = calc_newfocus(LSIDE, chL.indicator, chL.quantifier) ;
+                }
+                if (chR.active && chR.indicator != -1) {
+                    new_rt = calc_newfocus(RSIDE, chR.indicator, chR.quantifier) ;
+                }
+                if (chU.active && chU.indicator != -1) {
+                    new_hi = calc_newfocus(USIDE, chU.indicator, chU.quantifier) ;
+                }
+                if (chD.active && chD.indicator != -1) {
+                    new_lo = calc_newfocus(DSIDE, chD.indicator, chD.quantifier) ;
+                }
+                if (new_lo > new_hi) {
+                    log_info(FLIP, "Exchanged left/right bounds") ;
+                    view_hi = new_lo ;
+                    view_lo = new_hi ;
+                } else {
+                    view_hi = new_hi ;
+                    view_lo = new_lo ;
+                }
+                if (new_lt > new_rt) {
+                    log_info(FLIP, "Exchanged up/down bounds") ;
+                    view_lt = new_rt ;
+                    view_rt = new_rt ;
+                } else {
+                    view_lt = new_lt ;
+                    view_rt = new_rt ;
+                }
                 focus_adjust() ;
                 preview_redraw() ;
                 log_info(DONE, "Terminate") ;
@@ -1237,11 +1323,15 @@ int execute () {
                 }
                 goto end ;
             case EXIT:
-                ans = log_warn(QUIT, "(y/n)") ;
-                if (ans == 'y') {
+                if (idx + 1 <= exec.size() && exec[idx+1] == EXIT) {
                     return 0 ;
                 } else {
-                    goto keepls ;
+                    ans = log_warn(QUIT, "(y/n)") ;
+                    if (ans == 'y') {
+                        return 0 ;
+                    } else {
+                        goto keepls ;
+                    }
                 }
             case ABORT:
                 goto end ;
