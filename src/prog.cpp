@@ -6,6 +6,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <time.h>
+#include <cstdarg>
 
 
 
@@ -18,6 +19,18 @@ static const int view_hgt = 140 ;
 static const int view_wth = 160 ;
 /********************************/
 
+
+
+
+#define PLAIN     "\033[0m"
+#define BOLD      "\033[1m"
+#define UNDERLINE "\033[4m"
+#define BLINK     "\033[5m"
+#define RED       "\033[31m"
+#define GREEN     "\033[32m"
+#define YELLOW    "\033[33m"
+#define BLUE      "\033[34m"
+#define LGREEN    "\033[102m"
 
 
 
@@ -63,14 +76,20 @@ struct rgb {
     int b ;
 };
 
-enum cmd {SCOPE=-1000, NIL, REC, MAP, MAKE, SAVE, LS, HELP, RESET, HASH, NEXT, LSIDE, RSIDE, USIDE, DSIDE, HSIDE, VSIDE,
-    ASIDE, ZOOMIN, ZOOMOUT, LSHIFT, RSHIFT, USHIFT, DSHIFT, NUM, STR, EXIT, ABORT} ;
+enum cmd {
+    SCOPE=-1000, NIL, REC, MAP, MAKE, SAVE, LS, HELP,
+    RESET, HASH, NEXT, LSIDE, RSIDE, USIDE, DSIDE, HSIDE, VSIDE,
+    ASIDE, ZOOMIN, ZOOMOUT, LSHIFT, RSHIFT, USHIFT, DSHIFT, NUM,
+    STR, EXIT, ABORT,
+} ;
 
-enum msg_log {UNKCHR, NOSELEC, NOINDIC, NOFILE, PARSE, NOSUCHKW,
+enum msg_log {
+    UNKCHR, NOSELEC, NOINDIC, NOFILE, PARSE, NOSUCHKW,
     RESELEC, REINDIC, LONGQUANT, LONGCMD, LONGNAME, FEXISTS, QUIT, RENAME,
     DEFQUANT, DONE, NEWSCOPE, LOADED, SAVED, NEWMAP, BUILT, EMPTY,
-    SIGLS, SIGRESET, SIGHELP, NEWFOCUS, EXCEPTION, FLIP
-  } ;
+    SIGLS, SIGRESET, SIGHELP, NEWFOCUS, EXCEPTION, FLIP,
+} ;
+
 
 static Assoc kw ;
 
@@ -122,34 +141,39 @@ static int preview [view_hgt * view_wth] ;
 static int diverge_min = 0 ;
 
 
-void cursor (int i, int j) {
-    printf("\033[%d;%dH", i, j) ;
+std::string cursor (int i, int j) {
+    std::ostringstream str ;
+    str
+        << "\033["
+        << i
+        << ";"
+        << j
+        << "H" ;
+    return str.str() ;
 }
 
-void plaintext() {
-    printf("\033[0m") ;
-}
 
 void refresh () {
-    plaintext() ;
-    cursor(1, 1) ;
-    putchar('\n') ;
+    std::cout
+        << PLAIN
+        << cursor(1, 1)
+        << '\n' ;
 }
 
 void log_clear () {
-    plaintext() ;
+    std::cout << PLAIN ;
     for (int i = 0; i < view_hgt; i++) {
-        cursor(log_vpos+i, log_hpos) ;
+        std::cout << cursor(log_vpos+i, log_hpos) ;
         for (int j = 0; j < 80; j++) {
-            putchar(' ') ;
+            std::cout << ' ' ;
         }
     }
 }
 
 void prompt_clear () {
-    plaintext() ;
+    std::cout << PLAIN ;
     for (int i = 1; i < 5; i++) {
-        cursor(i, 1) ;
+        std::cout << cursor(i, 1) ;
         for (int j = 0; j < 90; j++) {
             putchar(' ') ;
         }
@@ -157,9 +181,9 @@ void prompt_clear () {
 }
 
 void view_clear () {
-    plaintext() ;
+    std::cout << PLAIN ;
     for (int i = 0; i < view_hgt; i++) {
-        cursor(view_vpos+i, view_hpos) ;
+        std::cout << cursor(view_vpos+i, view_hpos) ;
         for (int j = 0; j < view_wth; j++) {
             putchar(' ') ;
         }
@@ -240,14 +264,14 @@ void view_display () {
         }
     }
     for (int i = 0; i < view_hgt/2; i++) {
-        cursor(view_vpos+i, view_hpos) ;
+        std::cout << cursor(view_vpos+i, view_hpos) ;
         for (int j = 0; j < view_wth; j++) {
             rgb bg = view_colorspread(preview[2*i*view_wth + j]) ;
             rgb fg = view_colorspread(preview[(2*i+1)*view_wth + j]) ;
             printf("\033[48;2;%d;%d;%dm\033[38;2;%d;%d;%dm▄", bg.r, bg.g, bg.b, fg.r, fg.g, fg.b) ;
         }
     }
-    plaintext() ;
+    std::cout << PLAIN ;
 }
 
 double drand () {
@@ -300,11 +324,15 @@ void image_make () {
     for (int i = 0; i < I; i++) {
         for (int j = 0; j < J; j++) {
             n = diverge(std::complex<double> (X[j], Y[i])) ;
-            cursor(view_vpos+indic_i, view_hpos+indic_j) ;
-            printf("\033[102m ") ;
-            cursor(1, 1) ;
-            putchar('\n') ;
-            otmp << n << " " ;
+            std::cout
+                << cursor(view_vpos+indic_i, view_hpos+indic_j)
+                << LGREEN
+                << ' '
+                << cursor(1, 1)
+                << '\n' ;
+            otmp
+                << n
+                << " " ;
             if (n < mindv) mindv = n ;
             if (n > maxdv) maxdv = n ;
             if (++pxdrawn % corresp == 0) {
@@ -319,21 +347,29 @@ void image_make () {
     otmp.close() ;
     while (indic_i*2 < view_hgt) {
         while (indic_j < view_wth) {
-            cursor(view_vpos+indic_i, view_hpos+indic_j) ;
-            printf("\033[102m ") ;
-            cursor(1, 1) ;
-            putchar('\n') ;
+            std::cout << cursor(view_vpos+indic_i, view_hpos+indic_j) ;
+            std::cout
+                << LGREEN
+                << ' '
+                << cursor(1, 1)
+                << '\n' ;
             indic_j++ ;
         }
-        indic_i++;
+        indic_i++ ;
         indic_j = 0 ;
     }
-    cursor(1, 1) ;
-    plaintext() ;
+    std::cout
+        << cursor(1, 1)
+        << PLAIN ;
     // Calculations done, now convert to an image !
     std::ofstream pic (curr_name + ".ppm") ;
     std::ifstream itmp ("tmp") ;
-    pic << "P3\n" << J << " " << I << "\n255\n" ;
+    pic
+        << "P3\n"
+        << J
+        << " "
+        << I
+        << "\n255\n" ;
     rgb C ;
     for (int i = 0; i < I; i++) {
         for (int j = 0; j < J; j++) {
@@ -343,7 +379,13 @@ void image_make () {
             } else {
                 C = curr_map[colors_nb - (int)std::max(std::ceil((colors_nb-1) * ((double)n - mindv) / ((maxdv-1) - mindv)), 1.)] ;
             }
-            pic << C.r << " " << C.g << " " << C.b << " " ;
+            pic
+                << C.r
+                << " "
+                << C.g
+                << " "
+                << C.b
+                << " " ;
         }
         pic << "\n" ;
     }
@@ -359,60 +401,103 @@ void screen_clear () {
 
 void prompt_make () {
     prompt_clear() ;
-    cursor(2, 5) ;
-    printf("cmd\033[5m> ") ;
-    plaintext() ;
-    cursor(3, 7) ;
-    printf("Currently inside scope ") ;
-    for (int i = 0; i < kw[curr_scope].length(); i++) {
-        putchar(kw[curr_scope][i]) ;
-    }
+    std::cout
+        << cursor(2, 5)
+        << "cmd"
+        << BLINK
+        << "> "
+        << PLAIN
+        << cursor(3, 7)
+        << "Currently inside scope "
+        << kw[curr_scope] ;
     refresh() ;
-    cursor(2, 10) ;
-    printf("\033[33;1m") ;
+    std::cout
+        << cursor(2, 10)
+        << YELLOW
+        << BOLD ;
 }
 
 std::string msg_header(msg_log m) {
+    std::ostringstream str ;
     switch(m) {
-        case UNKCHR:    return "\033[31;1;5mERROR:\033[0m Unknown character                " ;
-        case NOSELEC:   return "\033[31;1;5mERROR:\033[0m No selector specified            " ;
-        case NOINDIC:   return "\033[31;1;5mERROR:\033[0m No indicator specified           " ;
-        case NOFILE:    return "\033[31;1;5mERROR:\033[0m No such file                     " ;
-        case PARSE:     return "\033[31;1;5mERROR:\033[0m Critical parsing error           " ;
-        case EXCEPTION: return "\033[31;1;5mERROR:\033[0m Runtime exception                " ;
-        case NOSUCHKW:  return "\033[31;1;5mERROR:\033[0m Not a valid keyword              " ;
-        case RESELEC:   return "\033[33;1;4mWARNING:\033[0m Too many selectors specified   " ;
-        case RENAME:    return "\033[33;1;4mWARNING:\033[0m Name already specified         " ;
-        case REINDIC:   return "\033[33;1;4mWARNING:\033[0m Too many indicators specified  " ;
-        case LONGQUANT: return "\033[33;1;4mWARNING:\033[0m Quantifier too long            " ;
-        case LONGCMD:   return "\033[33;1;4mWARNING:\033[0m Command too long               " ;
-        case LONGNAME:  return "\033[33;1;4mWARNING:\033[0m String literal too long        " ;
-        case FEXISTS:   return "\033[33;1;4mWARNING:\033[0m File already exists            " ;
-        case QUIT:      return "\033[33;1;4mWARNING:\033[0m Quit ?                         " ;
-        case DEFQUANT:  return "\033[34;1mINFO:\033[0m Used default quantifier           " ;
-        case DONE:      return "\033[32;1mSUCCESS\033[0m                                 " ;
-        case NEWSCOPE:  return "\033[34;1mINFO:\033[0m Changed scope                     " ;
-        case LOADED:    return "\033[34;1mINFO:\033[0m Loaded save file                  " ;
-        case SAVED:     return "\033[34;1mINFO:\033[0m Current settings saved            " ;
-        case NEWMAP:    return "\033[34;1mINFO:\033[0m Changed color map                 " ;
-        case BUILT:     return "\033[34;1mINFO:\033[0m Done building image               " ;
-        case EMPTY:     return "\033[34;1mINFO:\033[0m Blank expression                  " ;
-        case SIGLS:     return "\033[34;1mINFO:\033[0m Asked for listing                 " ;
-        case SIGRESET:  return "\033[34;1mINFO:\033[0m Asked for reset                   " ;
-        case SIGHELP:   return "\033[34;1mINFO:\033[0m Asked for help                    " ;
-        case NEWFOCUS:  return "\033[34;1mINFO:\033[0m Adjusting focus                   " ;
-        case FLIP:      return "\033[34;1mINFO:\033[0m Focus was flipped                 " ;
-        default:        return "" ;
+        case UNKCHR: case NOSELEC: case NOINDIC: case NOFILE: case PARSE:
+        case EXCEPTION: case NOSUCHKW:
+            str
+                << RED
+                << BOLD
+                << BLINK
+                << "ERROR:"
+                << PLAIN ;
+            break ;
+        case RESELEC: case RENAME: case REINDIC: case LONGQUANT:
+        case LONGCMD: case LONGNAME: case FEXISTS: case QUIT:
+            str
+                << YELLOW
+                << BOLD
+                << UNDERLINE
+                << "WARNING:"
+                << PLAIN ;
+            break ;
+        case DONE:
+            str
+                << GREEN
+                << BOLD
+                << "SUCCESS"
+                << PLAIN ;
+            break ;
+        case DEFQUANT: case NEWSCOPE: case LOADED: case SAVED:
+        case NEWMAP: case BUILT: case EMPTY: case SIGLS:
+        case SIGRESET: case SIGHELP: case NEWFOCUS: case FLIP:
+            str
+                << BLUE
+                << BOLD
+                << "INFO:"
+                << PLAIN ;
+            break ;
+        default:
+            return "" ;
     }
+    switch(m) {
+        case UNKCHR:    str <<  " Unknown character                " ; break ;
+        case NOSELEC:   str <<  " No selector specified            " ; break ;
+        case NOINDIC:   str <<  " No indicator specified           " ; break ;
+        case NOFILE:    str <<  " No such file                     " ; break ;
+        case PARSE:     str <<  " Critical parsing error           " ; break ;
+        case EXCEPTION: str <<  " Runtime exception                " ; break ;
+        case NOSUCHKW:  str <<  " Not a valid keyword              " ; break ;
+        case RESELEC:   str <<  " Too many selectors specified   " ; break ;
+        case RENAME:    str <<  " Name already specified         " ; break ;
+        case REINDIC:   str <<  " Too many indicators specified  " ; break ;
+        case LONGQUANT: str <<  " Quantifier too long            " ; break ;
+        case LONGCMD:   str <<  " Command too long               " ; break ;
+        case LONGNAME:  str <<  " String literal too long        " ; break ;
+        case FEXISTS:   str <<  " File already exists            " ; break ;
+        case QUIT:      str <<  " Quit ?                         " ; break ;
+        case DONE:      str <<  "                                 " ; break ;
+        case DEFQUANT:  str <<  " Used default quantifier           " ; break ;
+        case NEWSCOPE:  str <<  " Changed scope                     " ; break ;
+        case LOADED:    str <<  " Loaded save file                  " ; break ;
+        case SAVED:     str <<  " Current settings saved            " ; break ;
+        case NEWMAP:    str <<  " Changed color map                 " ; break ;
+        case BUILT:     str <<  " Done building image               " ; break ;
+        case EMPTY:     str <<  " Blank expression                  " ; break ;
+        case SIGLS:     str <<  " Asked for listing                 " ; break ;
+        case SIGRESET:  str <<  " Asked for reset                   " ; break ;
+        case SIGHELP:   str <<  " Asked for help                    " ; break ;
+        case NEWFOCUS:  str <<  " Adjusting focus                   " ; break ;
+        case FLIP:      str <<  " Focus was flipped                 " ; break ;
+    }
+    return str.str() ;
 }
 
 void log_redraw () {
     int L = log_vpos, C = log_hpos ;
     log_clear() ;
-    plaintext() ;
+    std::cout << PLAIN ;
     for (int i = log_hist.size()-1; i >= 0; i--) {
-        cursor(L-i+(int)log_hist.size(), C) ;
-        std::cout << log_hist[i] ;
+        std::cout
+            << cursor(L-i+(int)log_hist.size(), C)
+            << log_hist[i] ;
     }
     prompt_make() ;
 }
@@ -568,24 +653,29 @@ void ls_nil_print () {
     view_clear() ;
     ls_nil_read() ;
     int id = curr_lspage * entry_nb ;
-    plaintext() ;
-    cursor(view_vpos, view_hpos) ;
-    printf("Showing page %d for nil", curr_lspage) ;
+    std::cout
+        << PLAIN
+        << cursor(view_vpos, view_hpos)
+        << "Showing page "
+        << curr_lspage
+        << " for nil" ;
     int i ;
     for (i = 0; i < std::min((int)ls_text.size()-id, entry_nb); i++) {
-        cursor(view_vpos+2+i, view_hpos) ;
-        plaintext() ;
-        printf("\033[1m%d: ", id+i) ;
-        printf("\033[33m") ;
-        for (int j = 0; j < ls_text[id+i].length(); j++) {
-            putchar(ls_text[id+i][j]) ;
-        }
+        std::cout
+            << cursor(view_vpos+2+i, view_hpos)
+            << PLAIN
+            << BOLD
+            << id+i
+            << ": "
+            << YELLOW
+            << ls_text[id+i] ;
     }
     if (i == 0) {
-        cursor(view_vpos+2, view_hpos) ;
-        printf("Empty") ;
+        std::cout
+            << cursor(view_vpos+2, view_hpos)
+            << "Empty" ;
     }
-    plaintext() ;
+    std::cout << PLAIN ;
 }
 
 void ls_save_print () {
@@ -593,41 +683,58 @@ void ls_save_print () {
     view_clear() ;
     ls_save_read() ;
     int id = curr_lspage * entry_nb ;
-    plaintext() ;
-    cursor(view_vpos, view_hpos) ;
-    printf("Showing page %d for save", curr_lspage) ;
+    std::cout
+        << PLAIN
+        << cursor(view_vpos, view_hpos)
+        << "Showing page "
+        << curr_lspage
+        << " for save" ;
     int i ;
     for (i = 0; i < std::min((int)ls_text.size()-id, entry_nb); i++) {
-        cursor(view_vpos+2+i, view_hpos) ;
-        plaintext() ;
-        printf("\033[1m%d: ", id+i) ;
-        printf("\033[33m") ;
-        for (int j = 0; j < ls_text[id+i].length(); j++) {
-            putchar(ls_text[id+i][j]) ;
-        }
+        std::cout
+            << cursor(view_vpos+2+i, view_hpos)
+            << PLAIN
+            << BOLD
+            << id+i
+            << ": "
+            << YELLOW
+            << ls_text[id+i] ;
     }
     if (i == 0) {
-        cursor(view_vpos+2, view_hpos) ;
-        printf("Empty") ;
+        std::cout
+            << cursor(view_vpos+2, view_hpos)
+            << "Empty" ;
     }
-    plaintext() ;
+    std::cout << PLAIN ;
 }
 
 void ls_rec_print () {
     ls_scope = REC ;
     view_clear() ;
     focus_adjust() ;
-    plaintext() ;
-    cursor(view_vpos, view_hpos) ;
-    printf("Current settings for rec") ;
-    cursor(view_vpos+2, view_hpos) ;
-    printf("Size (in pixels): vertical %d ; horizontal %d", (int)std::ceil(pic_vresol), (int)std::ceil(pic_hresol)) ;
-    cursor(view_vpos+3, view_hpos) ;
-    printf("Showing complex plane") ;
-    cursor(view_vpos+4, view_hpos) ;
-    printf("    from %f+%fi", view_lt, view_lo) ;
-    cursor(view_vpos+5, view_hpos) ;
-    printf("    to %f+%fi", view_rt, view_hi) ;
+    std::cout
+        << PLAIN
+        << cursor(view_vpos, view_hpos)
+        << "Current settings for rec"
+        << cursor(view_vpos+2, view_hpos)
+        << "Size (in pixels): vertical "
+        << (int)std::ceil(pic_vresol)
+        << " ; horizontal "
+        << (int)std::ceil(pic_hresol)
+        << cursor(view_vpos+3, view_hpos)
+        << "Showing complex plane"
+        << cursor(view_vpos+4, view_hpos)
+        << "    from "
+        << view_lt
+        << "+"
+        << view_lo
+        << "i"
+        << cursor(view_vpos+5, view_hpos)
+        << "    to "
+        << view_rt
+        << "+"
+        << view_hi
+        << "i" ;
 }
 
 void ls_make_print () {
@@ -635,33 +742,43 @@ void ls_make_print () {
     view_clear() ;
     ls_make_read() ;
     int id = curr_lspage * entry_nb ;
-    plaintext() ;
-    cursor(view_vpos, view_hpos) ;
-    printf("Showing page %d for make", curr_lspage) ;
+    std::cout
+        << PLAIN
+        << cursor(view_vpos, view_hpos)
+        << "Showing page "
+        << curr_lspage
+        << " for make" ;
     int i ;
     for (i = 0; i < std::min((int)ls_text.size()-id, entry_nb); i++) {
-        cursor(view_vpos+2+i, view_hpos) ;
-        plaintext() ;
-        printf("\033[1m%d: ", id+i) ;
-        printf("\033[33m") ;
-        for (int j = 0; j < ls_text[id+i].length(); j++) {
-            putchar(ls_text[id+i][j]) ;
-        }
+        std::cout
+            << cursor(view_vpos+2+i, view_hpos)
+            << PLAIN
+            << BOLD
+            << id+i
+            << ": "
+            << YELLOW
+            << ls_text[id+i] ;
     }
     if (i == 0) {
-        cursor(view_vpos+2, view_hpos) ;
-        printf("Empty") ;
+        std::cout
+            << cursor(view_vpos+2, view_hpos)
+            << "Empty" ;
     }
-    plaintext() ;
+    std::cout << PLAIN ;
     focus_adjust() ;
-    cursor(view_vpos+entry_nb+5, view_hpos) ;
-    printf("Resolution: horizontal %d", (int)std::ceil(pic_hresol)) ;
-    cursor(view_vpos+entry_nb+6, view_hpos) ;
-    printf("            vertical   %d", (int)std::ceil(pic_vresol)) ;
-    cursor(view_vpos+entry_nb+7, view_hpos) ;
-    printf("Diverge iter: %d", diverge_iter) ;
-    cursor(view_vpos+entry_nb+8, view_hpos) ;
-    printf("Diverge radius: %d", (int)std::ceil(diverge_radius)) ;
+    std::cout
+        << cursor(view_vpos+entry_nb+5, view_hpos)
+        << "Resolution: horizontal "
+        << (int)std::ceil(pic_hresol)
+        << cursor(view_vpos+entry_nb+6, view_hpos)
+        << "            vertical   "
+        << (int)std::ceil(pic_vresol)
+        << cursor(view_vpos+entry_nb+7, view_hpos)
+        << "Diverge iter: "
+        << diverge_iter
+        << cursor(view_vpos+entry_nb+8, view_hpos)
+        << "Diverge radius: "
+        << (int)std::ceil(diverge_radius) ;
 }
 
 void ls_map_print () {
@@ -669,28 +786,36 @@ void ls_map_print () {
     view_clear() ;
     ls_map_read() ;
     int id = curr_lspage * entry_nb ;
-    plaintext() ;
-    cursor(view_vpos, view_hpos) ;
-    printf("Showing page %d for map", curr_lspage) ;
+    std::cout
+        << PLAIN
+        << cursor(view_vpos, view_hpos)
+        << "Showing page "
+        << curr_lspage
+        << " for map" ;
     int i ;
     for (i = 0; i < std::min((int)ls_colors.size()-id, entry_nb); i++) {
-        cursor(view_vpos+2+i, view_hpos) ;
-        plaintext() ;
-        printf("\033[1m%d:", id+i) ;
-        cursor(view_vpos+2+i, view_hpos+5) ;
+        std::cout
+            << cursor(view_vpos+2+i, view_hpos)
+            << PLAIN
+            << BOLD
+            << id+i
+            << ": "
+            << cursor(view_vpos+2+i, view_hpos+5) ;
         for (int j = 0; j < ls_colors[id+i].size(); j++) {
             auto col = ls_colors[id+i][j] ;
             printf("\033[38;2;%d;%d;%dm█", col.r, col.g, col.b) ;
         }
     }
     if (i == 0) {
-        cursor(view_vpos+2, view_hpos) ;
-        printf("Empty") ;
+        std::cout
+            << cursor(view_vpos+2, view_hpos)
+            << "Empty" ;
     }
-    cursor(view_vpos+entry_nb+5, view_hpos) ;
-    plaintext() ;
-    printf("Currently selected:") ;
-    cursor(view_vpos+entry_nb+6, view_hpos) ;
+    std::cout
+        << cursor(view_vpos+entry_nb+5, view_hpos)
+        << PLAIN
+        << "Currently selected:"
+        << cursor(view_vpos+entry_nb+6, view_hpos) ;
     for (int j = 0; j < curr_map.size(); j++) {
         auto col = curr_map[j] ;
         printf("\033[38;2;%d;%d;%dm█", col.r, col.g, col.b) ;
@@ -709,10 +834,9 @@ void help_print (std::string indic, std::string term) {
         } else if (printing && line == term) {
             return ;
         } else if (printing) {
-            cursor(view_vpos+cnt, view_hpos) ;
-            for (int i = 0; i < line.length(); i++) {
-                putchar(line[i]) ;
-            }
+            std::cout
+                << cursor(view_vpos+cnt, view_hpos)
+                << line ;
             cnt++ ;
         }
     }
@@ -746,9 +870,21 @@ void nil_help_print () {
 
 void save_output () {
     std::ofstream sv ("." + curr_name + ".save") ;
-    sv << pic_hresol << " " << pic_vresol << "\n" ;
-    sv << view_lt << " " << view_rt << "\n" ;
-    sv << view_lo << " " << view_hi << "\n" ;
+    sv
+        << pic_hresol
+        << " "
+        << pic_vresol
+        << "\n" ;
+    sv
+        << view_lt
+        << " "
+        << view_rt
+        << "\n" ;
+    sv
+        << view_lo
+        << " "
+        << view_hi
+        << "\n" ;
 }
 
 void save_input () {
@@ -774,7 +910,11 @@ void save_input (int id) {
 
 void meta_output () {
     std::ofstream sv ("." + curr_name + ".meta") ;
-    sv << diverge_radius << " " << diverge_iter << "\n" ;
+    sv
+        << diverge_radius
+        << " "
+        << diverge_iter
+        << "\n" ;
 }
 
 void meta_input () {
@@ -977,17 +1117,24 @@ struct adjust {
     int quantifier ;
 };
 
-std::ostream& operator<< (std::ostream &o, const adjust& a) {
-    return o << "active? " << (a.active ? "true" : "false") << "    dir? " << (a.indicator == ZOOMIN ? "in" : "out") <<  "    quant? " << a.quantifier << std::endl ;
-}
+// std::ostream& operator<< (std::ostream &o, const adjust& a) {
+//     return o
+//         << "active? "
+//         << (a.active ? "true" : "false")
+//         << "    dir? "
+//         << (a.indicator == ZOOMIN ? "in" : "out")
+//         <<  "    quant? "
+//         << a.quantifier
+//         << std::endl ;
+// }
 
 void scope_enter_action (cmd s) {
     switch (s) {
-        case NIL: curr_lspage = -1 ; nil_help_print() ; break ;
-        case MAKE: curr_lspage = 0 ; ls_make_print() ; break ;
-        case MAP: curr_lspage = 0 ; ls_map_print() ; break ;
-        case REC: curr_lspage = -1 ; focus_adjust() ; preview_redraw() ; break ;
-        case SAVE: curr_lspage = 0 ; ls_save_print() ; break ;
+        case NIL:  curr_lspage = -1 ; nil_help_print() ; break ;
+        case MAKE: curr_lspage = 0 ;  ls_make_print() ; break ;
+        case MAP:  curr_lspage = 0 ;  ls_map_print() ; break ;
+        case REC:  curr_lspage = -1 ; focus_adjust() ; preview_redraw() ; break ;
+        case SAVE: curr_lspage = 0 ;  ls_save_print() ; break ;
     }
 }
 
