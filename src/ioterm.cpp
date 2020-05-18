@@ -120,7 +120,7 @@ void log_redraw () {
     int L = log_vpos, C = log_hpos ;
     log_clear() ;
     std::cout << PLAIN ;
-    for (int i = log_hist.size()-1; i >= 0; i--) {
+    for (int i = (int)log_hist.size()-1; i >= 0; i--) {
         std::cout
             << cursor(L-i+(int)log_hist.size(), C)
             << log_hist[i] ;

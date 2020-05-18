@@ -9,11 +9,11 @@ void tokenize () {
     tokens.clear() ;
     int idx = 0, len = 0 ;
     types_chr curr ;
-    while (idx < command.length()) {
+    while (idx < (int)command.length()) {
         curr = chr_type(command[idx]) ;
         if (curr == KEYWORD) {
             len = 0;
-            while (idx+len < command.length() && chr_type(command[idx+(++len)]) == KEYWORD) {}
+            while (idx+len < (int)command.length() && chr_type(command[idx+(++len)]) == KEYWORD) {}
             tokens.push_back({idx, len}) ;
             idx += len ;
         } else if (curr == SYMBOL || curr == SELECTOR || curr == INDICATOR) {
@@ -21,12 +21,12 @@ void tokenize () {
             idx++ ;
         } else if (curr == MODIFIER) {
             len = 0 ;
-            while (idx+len < command.length() && chr_type(command[idx+(++len)]) != BLANK) {}
+            while (idx+len < (int)command.length() && chr_type(command[idx+(++len)]) != BLANK) {}
             tokens.push_back({idx, len}) ;
             idx += len ;
         } else if (curr == NUMERIC) {
             len = 0 ;
-            while (idx+len < command.length() && chr_type(command[idx+(++len)]) == NUMERIC) {}
+            while (idx+len < (int)command.length() && chr_type(command[idx+(++len)]) == NUMERIC) {}
             tokens.push_back({idx, len}) ;
             idx += len;
         } else if (curr == BLANK) {
@@ -54,7 +54,7 @@ void parse () {
         }
     }
     tokenize() ;
-    for (int i = 0; i < tokens.size(); i++) {
+    for (int i = 0; i < (int)tokens.size(); i++) {
         if (tokens[i].beg == -1) {
             log_err(UNKCHR, "") ;
             exec.push_back(ABORT) ;
@@ -76,7 +76,7 @@ void parse () {
                 nameset = true ;
             }
         } else if (is_num(command[tokens[i].beg])) {
-            int n = int_parse(command, tokens[i].beg, tokens[i].len) ;
+            int n = int_parse(tokens[i].beg, tokens[i].len) ;
             if (n == -1) {
                 log_err(PARSE, command.substr(tokens[i].beg, 5) + "... not a valid quantifier") ;
                 exec.push_back(ABORT) ;
@@ -144,7 +144,7 @@ std::string str_parse (int begin, int len) {
 
 /* Read integer at given location
  */
-int int_parse (std::string command, int begin, int len) {
+int int_parse (int begin, int len) {
     int n = 0 ;
     if (len > num_maxlen) {
         char ans = log_warn(LONGQUANT, command.substr(begin, 5) + "... truncate ? (y/n)") ;

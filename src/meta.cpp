@@ -22,7 +22,7 @@ rgb view_colorspread (int dv) {
 
 int map_choose (int id) {
     ls_map_read() ;
-    if (id < ls_colors.size()) {
+    if (id < (int)ls_colors.size()) {
         curr_map = ls_colors[id] ;
     } else {
         log_err(NOFILE, "Map does not exist") ;
@@ -74,5 +74,6 @@ void scope_enter_action (cmd s) {
         case MAP:  curr_lspage = 0 ;  ls_map_print() ; break ;
         case REC:  curr_lspage = -1 ; focus_adjust() ; preview_redraw() ; break ;
         case SAVE: curr_lspage = 0 ;  ls_save_print() ; break ;
+        default: break ;
     }
 }

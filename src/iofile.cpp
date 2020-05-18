@@ -31,7 +31,7 @@ void save_input () {
 
 void save_input (int id) {
     ls_save_read() ;
-    if (id < ls_text.size()) {
+    if ((long unsigned)id < ls_text.size()) {
         curr_name = ls_text[id] ;
     } else {
         log_err(NOFILE, "Quantifier too big") ;
@@ -58,7 +58,7 @@ void meta_input () {
 
 void meta_input (int id) {
     ls_nil_read() ;
-    if (id < ls_text.size()) {
+    if ((long unsigned)id < ls_text.size()) {
         curr_name = ls_text[id] ;
     } else {
         log_err(NOFILE, "Quantifier too big") ;

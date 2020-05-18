@@ -6,13 +6,13 @@ int execute () {
     char ans ;
     bool resol_just_set = false ;
     for (;;) {
-        if (idx >= exec.size()) {
+        if (idx >= (int)exec.size()) {
             log_info(EMPTY, "Nothing left to do") ;
             goto end ;
         }
         switch (exec[idx]) {
             case SCOPE:
-                if (idx+1 >= exec.size()) {
+                if (idx+1 >= (int)exec.size()) {
                     log_err(PARSE, "No scope specified") ;
                     goto end ;
                 }
@@ -45,7 +45,7 @@ int execute () {
             case LS:
                 switch (curr_scope) {
                     case MAP:
-                        if (idx+1 < exec.size() && exec[idx+1]==NUM) {
+                        if (idx+1 < (int)exec.size() && exec[idx+1]==NUM) {
                             curr_lspage = exec[idx+2] ;
                         } else {
                             curr_lspage = 0 ;
@@ -55,7 +55,7 @@ int execute () {
                         log_info(DONE, "Terminate") ;
                         goto keepls ;
                     case NIL:
-                        if (idx+1 < exec.size() && exec[idx+1]==NUM) {
+                        if (idx+1 < (int)exec.size() && exec[idx+1]==NUM) {
                             curr_lspage = exec[idx+2] ;
                         } else {
                             curr_lspage = 0 ;
@@ -65,7 +65,7 @@ int execute () {
                         log_info(DONE, "Terminate") ;
                         goto keepls ;
                     case SAVE:
-                        if (idx+1 < exec.size() && exec[idx+1]==NUM) {
+                        if (idx+1 < (int)exec.size() && exec[idx+1]==NUM) {
                             curr_lspage = exec[idx+2] ;
                         } else {
                             curr_lspage = 0 ;
@@ -75,7 +75,7 @@ int execute () {
                         log_info(DONE, "Terminate") ;
                         goto keepls ;
                     case MAKE:
-                        if (idx+1 < exec.size() && exec[idx+1]==NUM) {
+                        if (idx+1 < (int)exec.size() && exec[idx+1]==NUM) {
                             curr_lspage = exec[idx+2] ;
                         } else {
                             curr_lspage = 0 ;
@@ -105,6 +105,7 @@ int execute () {
                         make_help_print() ; break ;
                     case NIL:
                         nil_help_print() ; break ;
+                    default: break ;
                     }
                 log_info(SIGHELP, "") ;
                 log_info(DONE, "Terminate") ;
@@ -174,6 +175,7 @@ int execute () {
                     case NIL:
                         ls_nil_print() ;
                         break ;
+                    default: break ;
                 }
                 log_info(DONE, "Terminate") ;
                 goto keepls ;
@@ -186,7 +188,7 @@ int execute () {
                 }
                 adjust chL {false, -1, -1} ;
                 adjust chR = chL, chU = chL, chD = chL ;
-                for (int i = idx; i < exec.size(); i++) {
+                for (int i = idx; i < (int)exec.size(); i++) {
                     switch (exec[i]) {
                         case RSIDE:
                             chR.active = true ; break ;
@@ -332,7 +334,7 @@ int execute () {
                 }
                 goto end ;
             case EXIT:
-                if (idx + 1 <= exec.size() && exec[idx+1] == EXIT) {
+                if (idx+1 <= (int)exec.size() && exec[idx+1] == EXIT) {
                     return 0 ;
                 } else {
                     ans = log_warn(QUIT, "(y/n)") ;

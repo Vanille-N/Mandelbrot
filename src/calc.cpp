@@ -23,7 +23,7 @@ std::vector<double> linspace (double a, double b, int n) {
 
 std::vector<int> round (std::vector<double> orig) {
     std::vector<int> r ;
-    for (int i = 0; i < orig.size(); i++) {
+    for (int i = 0; i < (int)orig.size(); i++) {
         r.push_back((int)std::floor(orig[i])) ;
     }
     return r ;

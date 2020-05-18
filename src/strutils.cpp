@@ -9,7 +9,7 @@ char random_chr () {
 }
 
 std::string random_name () {
-    srand((unsigned int)(time(NULL) + pic_vresol * (view_hi - view_lo) + pic_hresol * (view_rt - view_lt))) ;
+    srand((unsigned int)((double)time(NULL) + pic_vresol * (view_hi - view_lo) + pic_hresol * (view_rt - view_lt))) ;
     char name [5] ;
     for (int i = 0; i < 5; i++) {
         name[i] = random_chr() ;
@@ -31,9 +31,9 @@ void hash_name () {
 }
 
 bool is_portable_char(char c) {
-    return '0' <= c && c <= '9'
-        || 'a' <= c && c <= 'z'
-        || 'A' <= c && c <= 'Z'
+    return ('0' <= c && c <= '9')
+        || ('a' <= c && c <= 'z')
+        || ('A' <= c && c <= 'Z')
         || c == '.'
         || c == '-'
         || c == '_' ;

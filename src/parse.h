@@ -10,4 +10,4 @@ void parse () ;
 bool is_num (char) ;
 types_chr chr_type (char) ;
 std::string str_parse (int, int) ;
-int int_parse (std::string, int, int) ;
+int int_parse (int, int) ;

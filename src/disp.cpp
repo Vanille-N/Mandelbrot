@@ -302,7 +302,7 @@ void ls_map_print () {
             << id+i
             << ": "
             << cursor(view_vpos+4+i, view_hpos+7) ;
-        for (int j = 0; j < ls_colors[id+i].size(); j++) {
+        for (int j = 0; (long unsigned)j < ls_colors[id+i].size(); j++) {
             auto col = ls_colors[id+i][j] ;
             printf("\033[38;2;%d;%d;%dm█", col.r, col.g, col.b) ;
         }
@@ -320,7 +320,7 @@ void ls_map_print () {
         << PLAIN
         << "Currently selected:"
         << cursor(view_vpos+entry_nb+8, view_hpos+2) ;
-    for (int j = 0; j < curr_map.size(); j++) {
+    for (int j = 0; (long unsigned)j < curr_map.size(); j++) {
         auto col = curr_map[j] ;
         printf("\033[38;2;%d;%d;%dm█", col.r, col.g, col.b) ;
     }
@@ -340,7 +340,7 @@ void help_print (std::string indic, std::string term) {
         } else if (printing) {
             std::cout << cursor(view_vpos+cnt+2, view_hpos+2) ;
             bool color = false ;
-            for (int i = 0; i < line.length(); i++) {
+            for (int i = 0; (long unsigned)i < line.length(); i++) {
                 if (line[i] == '$' || line[i] == '&') {
                     if (line[i] == '&') {
                         color = false ;
@@ -478,7 +478,7 @@ std::string msg_header(msg_log m) {
 
 void hist_shift () {
     if (log_hist.size() <= log_hgt) return ;
-    for (int i = 1; i < log_hist.size(); i++) {
+    for (int i = 1; (long unsigned)i < log_hist.size(); i++) {
         log_hist[i-1] = log_hist[i] ;
     }
 }
