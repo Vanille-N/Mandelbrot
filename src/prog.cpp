@@ -437,7 +437,10 @@ void prompt_make () {
         << PLAIN
         << cursor(3, 7)
         << "Currently inside scope "
-        << kw[curr_scope] ;
+        << BLUE
+        << BOLD
+        << kw[curr_scope]
+        << PLAIN ;
     refresh() ;
     std::cout
         << cursor(2, 10)
@@ -710,8 +713,14 @@ void ls_nil_print () {
         << PLAIN
         << cursor(view_vpos+2, view_hpos+2)
         << "Showing page "
+        << YELLOW
+        << BOLD
         << curr_lspage
-        << " for nil" ;
+        << PLAIN
+        << " for "
+        << BLUE
+        << BOLD
+        << "nil" ;
     int i ;
     for (i = 0; i < std::min((int)ls_text.size()-id, entry_nb); i++) {
         std::cout
@@ -726,6 +735,9 @@ void ls_nil_print () {
     if (i == 0) {
         std::cout
             << cursor(view_vpos+4, view_hpos+2)
+            << PLAIN
+            << RED
+            << BOLD
             << "Empty" ;
     }
     std::cout << PLAIN ;
@@ -740,8 +752,14 @@ void ls_save_print () {
         << PLAIN
         << cursor(view_vpos+2, view_hpos+2)
         << "Showing page "
+        << YELLOW
+        << BOLD
         << curr_lspage
-        << " for save" ;
+        << PLAIN
+        << " for "
+        << BLUE
+        << BOLD
+        << "save" ;
     int i ;
     for (i = 0; i < std::min((int)ls_text.size()-id, entry_nb); i++) {
         std::cout
@@ -756,6 +774,9 @@ void ls_save_print () {
     if (i == 0) {
         std::cout
             << cursor(view_vpos+4, view_hpos+2)
+            << PLAIN
+            << RED
+            << BOLD
             << "Empty" ;
     }
     std::cout << PLAIN ;
@@ -768,26 +789,43 @@ void ls_rec_print () {
     std::cout
         << PLAIN
         << cursor(view_vpos+2, view_hpos+2)
-        << "Current settings for rec"
+        << "Current settings for "
+        << BLUE
+        << BOLD
+        << "rec"
+        << PLAIN
         << cursor(view_vpos+4, view_hpos+2)
-        << "Size (in pixels): vertical "
-        << (int)std::ceil(pic_vresol)
-        << " ; horizontal "
+        << "Size (in pixels): horizontal "
+        << GREEN
+        << BOLD
         << (int)std::ceil(pic_hresol)
+        << PLAIN
         << cursor(view_vpos+5, view_hpos+2)
-        << "Showing complex plane"
+        << "                    vertical "
+        << GREEN
+        << BOLD
+        << (int)std::ceil(pic_vresol)
+        << PLAIN
         << cursor(view_vpos+6, view_hpos+2)
+        << "Showing complex plane"
+        << cursor(view_vpos+7, view_hpos+2)
         << "    from "
+        << RED
+        << BOLD
         << view_lt
-        << "+"
+        << (view_lo >= 0. ? "+" : "")
         << view_lo
         << "i"
-        << cursor(view_vpos+7, view_hpos+2)
-        << "    to "
+        << PLAIN
+        << cursor(view_vpos+8, view_hpos+2)
+        << "      to "
+        << RED
+        << BOLD
         << view_rt
-        << "+"
+        << (view_hi >= 0. ? "+" : "")
         << view_hi
-        << "i" ;
+        << "i"
+        << PLAIN ;
 }
 
 void ls_make_print () {
@@ -799,8 +837,14 @@ void ls_make_print () {
         << PLAIN
         << cursor(view_vpos+2, view_hpos+2)
         << "Showing page "
+        << YELLOW
+        << BOLD
         << curr_lspage
-        << " for make" ;
+        << PLAIN
+        << " for "
+        << BLUE
+        << BOLD
+        << "make" ;
     int i ;
     for (i = 0; i < std::min((int)ls_text.size()-id, entry_nb); i++) {
         std::cout
@@ -815,6 +859,9 @@ void ls_make_print () {
     if (i == 0) {
         std::cout
             << cursor(view_vpos+4, view_hpos+2)
+            << PLAIN
+            << RED
+            << BOLD
             << "Empty" ;
     }
     std::cout << PLAIN ;
@@ -822,16 +869,28 @@ void ls_make_print () {
     std::cout
         << cursor(view_vpos+entry_nb+7, view_hpos+2)
         << "Resolution: horizontal "
+        << GREEN
+        << BOLD
         << (int)std::ceil(pic_hresol)
+        << PLAIN
         << cursor(view_vpos+entry_nb+8, view_hpos+2)
-        << "            vertical   "
+        << "              vertical "
+        << GREEN
+        << BOLD
         << (int)std::ceil(pic_vresol)
-        << cursor(view_vpos+entry_nb+9, view_hpos+2)
-        << "Diverge iter: "
-        << diverge_iter
+        << PLAIN
         << cursor(view_vpos+entry_nb+10, view_hpos+2)
-        << "Diverge radius: "
-        << (int)std::ceil(diverge_radius) ;
+        << "Divergence: radius "
+        << YELLOW
+        << BOLD
+        << (int)std::ceil(diverge_radius)
+        << PLAIN
+        << cursor(view_vpos+entry_nb+11, view_hpos+2)
+        << "              iter "
+        << YELLOW
+        << BOLD
+        << diverge_iter
+        << PLAIN ;
 }
 
 void ls_map_print () {
@@ -843,8 +902,14 @@ void ls_map_print () {
         << PLAIN
         << cursor(view_vpos+2, view_hpos+2)
         << "Showing page "
+        << YELLOW
+        << BOLD
         << curr_lspage
-        << " for map" ;
+        << PLAIN
+        << " for "
+        << BLUE
+        << BOLD
+        << "map" ;
     int i ;
     for (i = 0; i < std::min((int)ls_colors.size()-id, entry_nb); i++) {
         std::cout
@@ -862,6 +927,9 @@ void ls_map_print () {
     if (i == 0) {
         std::cout
             << cursor(view_vpos+4, view_hpos+2)
+            << PLAIN
+            << RED
+            << BOLD
             << "Empty" ;
     }
     std::cout
