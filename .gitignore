@@ -1,6 +1,8 @@
 *.ppm
-prog
+mandelbrot
+build/.depend
 .x.txt
 *.meta
 *.save
 local-*
+*.o
