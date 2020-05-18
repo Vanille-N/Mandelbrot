@@ -22,17 +22,23 @@ static const int view_wth = 160 ;
 
 
 
-#define PLAIN     "\033[0m"
-#define BOLD      "\033[1m"
-#define UNDERLINE "\033[4m"
-#define BLINK     "\033[5m"
-#define RED       "\033[31m"
-#define GREEN     "\033[32m"
-#define YELLOW    "\033[33m"
-#define BLUE      "\033[34m"
-#define LGREEN    "\033[102m"
+static const std::string PLAIN     = "\033[0m" ;
+static const std::string BLACK     = "\033[30m" ;
+static const std::string BOLD      = "\033[1m" ;
+static const std::string UNDERLINE = "\033[4m" ;
+static const std::string BLINK     = "\033[5m" ;
+static const std::string RED       = "\033[31m" ;
+static const std::string GREEN     = "\033[32m" ;
+static const std::string YELLOW    = "\033[33m" ;
+static const std::string BLUE      = "\033[34m" ;
+static const std::string LGREEN    = "\033[102m" ;
 
-
+static const std::string ULCORNER = "╔" ;
+static const std::string URCORNER = "╗" ;
+static const std::string DLCORNER = "╚" ;
+static const std::string DRCORNER = "╝" ;
+static const std::string HBOX = "═" ;
+static const std::string VBOX = "║" ;
 
 /* Assoc class provides an easy two-way correspondance between user keywords
  * and internal cmd representation.
@@ -191,21 +197,21 @@ void view_clear () {
     std::cout
         << PLAIN
         << cursor(view_vpos-1, view_hpos-2)
-        << "╔"
-        << repeat(view_wth+2, "═")
+        << ULCORNER
+        << repeat(view_wth+2, HBOX)
         << "╗" ;
     for (int i = 0; i < view_hgt-1; i++) {
         std::cout
             << cursor(view_vpos+i, view_hpos-2)
-            << "║"
+            << VBOX
             << std::string(view_wth+2, ' ')
-            << "║" ;
+            << VBOX ;
     }
     std::cout
         << cursor(view_vpos+view_hgt-1, view_hpos-2)
-        << "╚"
-        << repeat(view_wth+2, "═")
-        << "╝" ;
+        << DLCORNER
+        << repeat(view_wth+2, HBOX)
+        << DRCORNER ;
 }
 
 void resol_set (double resol) {
@@ -513,21 +519,21 @@ void log_draw_rect () {
     std::cout
         << PLAIN
         << cursor(log_vpos, log_hpos-2)
-        << "╔"
-        << repeat(80, "═")
-        << "╗" ;
+        << ULCORNER
+        << repeat(80, HBOX)
+        << URCORNER ;
     for (int i = 0; i <= log_hgt; i++) {
         std::cout
             << cursor(log_vpos+i+1, log_hpos-2)
-            << "║"
+            << VBOX
             << cursor(log_vpos+i+1, log_hpos+79)
-            << "║";
+            << VBOX;
     }
     std::cout
         << cursor(log_vpos+log_hgt+1, log_hpos-2)
-        << "╚"
-        << repeat(80, "═")
-        << "╝" ;
+        << DLCORNER
+        << repeat(80, HBOX)
+        << DRCORNER ;
 }
 
 void log_redraw () {
@@ -696,14 +702,14 @@ void ls_nil_print () {
     int id = curr_lspage * entry_nb ;
     std::cout
         << PLAIN
-        << cursor(view_vpos, view_hpos)
+        << cursor(view_vpos+2, view_hpos+2)
         << "Showing page "
         << curr_lspage
         << " for nil" ;
     int i ;
     for (i = 0; i < std::min((int)ls_text.size()-id, entry_nb); i++) {
         std::cout
-            << cursor(view_vpos+2+i, view_hpos)
+            << cursor(view_vpos+4+i, view_hpos+2)
             << PLAIN
             << BOLD
             << id+i
@@ -713,7 +719,7 @@ void ls_nil_print () {
     }
     if (i == 0) {
         std::cout
-            << cursor(view_vpos+2, view_hpos)
+            << cursor(view_vpos+4, view_hpos+2)
             << "Empty" ;
     }
     std::cout << PLAIN ;
@@ -726,14 +732,14 @@ void ls_save_print () {
     int id = curr_lspage * entry_nb ;
     std::cout
         << PLAIN
-        << cursor(view_vpos, view_hpos)
+        << cursor(view_vpos+2, view_hpos+2)
         << "Showing page "
         << curr_lspage
         << " for save" ;
     int i ;
     for (i = 0; i < std::min((int)ls_text.size()-id, entry_nb); i++) {
         std::cout
-            << cursor(view_vpos+2+i, view_hpos)
+            << cursor(view_vpos+4+i, view_hpos+2)
             << PLAIN
             << BOLD
             << id+i
@@ -743,7 +749,7 @@ void ls_save_print () {
     }
     if (i == 0) {
         std::cout
-            << cursor(view_vpos+2, view_hpos)
+            << cursor(view_vpos+4, view_hpos+2)
             << "Empty" ;
     }
     std::cout << PLAIN ;
@@ -755,22 +761,22 @@ void ls_rec_print () {
     focus_adjust() ;
     std::cout
         << PLAIN
-        << cursor(view_vpos, view_hpos)
+        << cursor(view_vpos+2, view_hpos+2)
         << "Current settings for rec"
-        << cursor(view_vpos+2, view_hpos)
+        << cursor(view_vpos+4, view_hpos+2)
         << "Size (in pixels): vertical "
         << (int)std::ceil(pic_vresol)
         << " ; horizontal "
         << (int)std::ceil(pic_hresol)
-        << cursor(view_vpos+3, view_hpos)
+        << cursor(view_vpos+5, view_hpos+2)
         << "Showing complex plane"
-        << cursor(view_vpos+4, view_hpos)
+        << cursor(view_vpos+6, view_hpos+2)
         << "    from "
         << view_lt
         << "+"
         << view_lo
         << "i"
-        << cursor(view_vpos+5, view_hpos)
+        << cursor(view_vpos+7, view_hpos+2)
         << "    to "
         << view_rt
         << "+"
@@ -785,14 +791,14 @@ void ls_make_print () {
     int id = curr_lspage * entry_nb ;
     std::cout
         << PLAIN
-        << cursor(view_vpos, view_hpos)
+        << cursor(view_vpos+2, view_hpos+2)
         << "Showing page "
         << curr_lspage
         << " for make" ;
     int i ;
     for (i = 0; i < std::min((int)ls_text.size()-id, entry_nb); i++) {
         std::cout
-            << cursor(view_vpos+2+i, view_hpos)
+            << cursor(view_vpos+4+i, view_hpos+2)
             << PLAIN
             << BOLD
             << id+i
@@ -802,22 +808,22 @@ void ls_make_print () {
     }
     if (i == 0) {
         std::cout
-            << cursor(view_vpos+2, view_hpos)
+            << cursor(view_vpos+4, view_hpos+2)
             << "Empty" ;
     }
     std::cout << PLAIN ;
     focus_adjust() ;
     std::cout
-        << cursor(view_vpos+entry_nb+5, view_hpos)
+        << cursor(view_vpos+entry_nb+7, view_hpos+2)
         << "Resolution: horizontal "
         << (int)std::ceil(pic_hresol)
-        << cursor(view_vpos+entry_nb+6, view_hpos)
+        << cursor(view_vpos+entry_nb+8, view_hpos+2)
         << "            vertical   "
         << (int)std::ceil(pic_vresol)
-        << cursor(view_vpos+entry_nb+7, view_hpos)
+        << cursor(view_vpos+entry_nb+9, view_hpos+2)
         << "Diverge iter: "
         << diverge_iter
-        << cursor(view_vpos+entry_nb+8, view_hpos)
+        << cursor(view_vpos+entry_nb+10, view_hpos+2)
         << "Diverge radius: "
         << (int)std::ceil(diverge_radius) ;
 }
@@ -829,19 +835,19 @@ void ls_map_print () {
     int id = curr_lspage * entry_nb ;
     std::cout
         << PLAIN
-        << cursor(view_vpos, view_hpos)
+        << cursor(view_vpos+2, view_hpos+2)
         << "Showing page "
         << curr_lspage
         << " for map" ;
     int i ;
     for (i = 0; i < std::min((int)ls_colors.size()-id, entry_nb); i++) {
         std::cout
-            << cursor(view_vpos+2+i, view_hpos)
+            << cursor(view_vpos+4+i, view_hpos+2)
             << PLAIN
             << BOLD
             << id+i
             << ": "
-            << cursor(view_vpos+2+i, view_hpos+5) ;
+            << cursor(view_vpos+4+i, view_hpos+7) ;
         for (int j = 0; j < ls_colors[id+i].size(); j++) {
             auto col = ls_colors[id+i][j] ;
             printf("\033[38;2;%d;%d;%dm█", col.r, col.g, col.b) ;
@@ -849,14 +855,14 @@ void ls_map_print () {
     }
     if (i == 0) {
         std::cout
-            << cursor(view_vpos+2, view_hpos)
+            << cursor(view_vpos+4, view_hpos+2)
             << "Empty" ;
     }
     std::cout
-        << cursor(view_vpos+entry_nb+5, view_hpos)
+        << cursor(view_vpos+entry_nb+7, view_hpos+2)
         << PLAIN
         << "Currently selected:"
-        << cursor(view_vpos+entry_nb+6, view_hpos) ;
+        << cursor(view_vpos+entry_nb+8, view_hpos+2) ;
     for (int j = 0; j < curr_map.size(); j++) {
         auto col = curr_map[j] ;
         printf("\033[38;2;%d;%d;%dm█", col.r, col.g, col.b) ;
@@ -876,7 +882,7 @@ void help_print (std::string indic, std::string term) {
             return ;
         } else if (printing) {
             std::cout
-                << cursor(view_vpos+cnt, view_hpos)
+                << cursor(view_vpos+cnt+2, view_hpos+2)
                 << line ;
             cnt++ ;
         }
