@@ -1287,7 +1287,7 @@ int execute () {
                         return 1 ;
                     default:
                         log_err(PARSE, kw[exec[idx+1]]  + " not expected after keyword 'scope'") ;
-                        goto end ;
+                        goto keepls ;
                 }
             case NIL: case REC: case MAP: case MAKE: case SAVE:
                 log_info(NEWSCOPE, "Temporary scope change to " + kw[exec[idx]]) ;
@@ -1343,7 +1343,7 @@ int execute () {
                         goto end ;
                     default:
                         log_err(PARSE, "LS not expected in current scope") ;
-                        goto end ;
+                        goto keepls ;
                 }
             case HELP:
                 switch (curr_scope) {
@@ -1552,14 +1552,14 @@ int execute () {
                         focus_adjust() ;
                         preview_redraw() ;
                         log_info(DONE, "Terminate") ;
-                        goto end ;
+                        goto keepls ;
                     case NIL:
                         meta_input(exec[idx+1]) ;
                         log_info(DONE, "Terminate") ;
                         goto keepls ;
                     default:
                         log_err(PARSE, "Quantifier not expected here") ;
-                        goto end ;
+                        goto keepls ;
                 }
             case STR:
                 switch (curr_scope) {
@@ -1595,7 +1595,7 @@ int execute () {
                     }
                 }
             case ABORT:
-                goto end ;
+                goto keepls ;
         }
     }
     end:
