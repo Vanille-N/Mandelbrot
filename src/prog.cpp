@@ -152,6 +152,13 @@ std::string cursor (int i, int j) {
     return str.str() ;
 }
 
+std::string repeat (int n, std::string s) {
+    std::ostringstream str ;
+    for (int i = 0; i < n; i++) {
+        str << s ;
+    }
+    return str.str() ;
+}
 
 void refresh () {
     std::cout
@@ -181,13 +188,24 @@ void prompt_clear () {
 }
 
 void view_clear () {
-    std::cout << PLAIN ;
-    for (int i = 0; i < view_hgt; i++) {
-        std::cout << cursor(view_vpos+i, view_hpos) ;
-        for (int j = 0; j < view_wth; j++) {
-            putchar(' ') ;
-        }
+    std::cout
+        << PLAIN
+        << cursor(view_vpos-1, view_hpos-2)
+        << "╔"
+        << repeat(view_wth+2, "═")
+        << "╗" ;
+    for (int i = 0; i < view_hgt-1; i++) {
+        std::cout
+            << cursor(view_vpos+i, view_hpos-2)
+            << "║"
+            << std::string(view_wth+2, ' ')
+            << "║" ;
     }
+    std::cout
+        << cursor(view_vpos+view_hgt-1, view_hpos-2)
+        << "╚"
+        << repeat(view_wth+2, "═")
+        << "╝" ;
 }
 
 void resol_set (double resol) {
@@ -487,14 +505,6 @@ std::string msg_header(msg_log m) {
         case SIGHELP:   str <<  " Asked for help                    " ; break ;
         case NEWFOCUS:  str <<  " Adjusting focus                   " ; break ;
         case FLIP:      str <<  " Focus was flipped                 " ; break ;
-    }
-    return str.str() ;
-}
-
-std::string repeat (int n, std::string s) {
-    std::ostringstream str ;
-    for (int i = 0; i < n; i++) {
-        str << s ;
     }
     return str.str() ;
 }
