@@ -6,3 +6,4 @@ build/.depend
 *.save
 local-*
 *.o
+*.d

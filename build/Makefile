@@ -1,26 +1,37 @@
-appname := mandelbrot
+CXX = g++
+CXX_FLAGS = -Wfatal-errors -Wall -Wextra -Wpedantic -Wconversion -Wshadow
 
-CXX := g++
-CXXFLAGS :=
+BIN = mandelbrot
+BUILD_DIR = ./
 
-srcfiles := $(shell find ../src -name "*.cpp")
-objects  := $(patsubst %.cpp, %.o, $(srcfiles))
+# List of all .cpp source files.
+CPP = $(wildcard ../src/*.cpp)
 
-all: $(appname)
+# All .o files go to build dir.
+OBJ = $(CPP:../src/%.cpp=../src/obj/%.o)
+# Gcc/Clang will create these .d files containing dependencies.
+DEP = $(OBJ:%.o=%.d)
 
-$(appname): $(objects)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $(appname) $(objects) $(LDLIBS)
+# Actual target of the binary - depends on all .o files.
+$(BIN) : $(OBJ)
+	# Create build directories - same structure as sources.
+	mkdir -p $(@D)
+	# Just link all the object files.
+	$(CXX) $(CXX_FLAGS) $^ -o $@
 
-depend: .depend
+# Include all .d files
+-include $(DEP)
 
-.depend: $(srcfiles)
-	rm -f ./.depend
-	$(CXX) $(CXXFLAGS) -MM $^>>./.depend;
+# Build target for every single object file.
+# The potential dependency on header files is covered
+# by calling `-include $(DEP)`.
+../src/obj/%.o : ../src/%.cpp
+	mkdir -p $(@D)
+	# The -MMD flags additionaly creates a .d file with
+	# the same name as the .o file.
+	$(CXX) $(CXX_FLAGS) -MMD -c $< -o $@
 
-clean:
-	rm -f $(objects)
-
-dist-clean: clean
-	rm -f *~ .depend
-
-include .depend
+.PHONY : clean
+clean :
+	# This should remove all generated files.
+	-rm $(BIN) $(OBJ) $(DEP)
