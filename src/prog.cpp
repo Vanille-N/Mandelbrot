@@ -98,11 +98,11 @@ static std::string curr_name = "NULL" ;
 static const int num_maxlen = 7 ;
 static const int str_maxlen = 20 ;
 static const int cmd_maxlen = 50 ;
-static const int view_vpos = 5 ;
-static const int view_hpos = 5 ;
+static const int view_vpos = 7 ;
+static const int view_hpos = 7 ;
 static const int log_hgt = 20 ;
 static const int log_vpos = 5 ;
-static const int log_hpos = view_hpos + view_wth + 5 ;
+static const int log_hpos = view_hpos + view_wth + 7 ;
 static const int entry_nb = 20 ;
 static const int colors_nb = 40 ;
 
@@ -491,6 +491,35 @@ std::string msg_header(msg_log m) {
     return str.str() ;
 }
 
+std::string repeat (int n, std::string s) {
+    std::ostringstream str ;
+    for (int i = 0; i < n; i++) {
+        str << s ;
+    }
+    return str.str() ;
+}
+
+void log_draw_rect () {
+    std::cout
+        << PLAIN
+        << cursor(log_vpos, log_hpos-2)
+        << "╔"
+        << repeat(80, "═")
+        << "╗" ;
+    for (int i = 0; i <= log_hgt; i++) {
+        std::cout
+            << cursor(log_vpos+i+1, log_hpos-2)
+            << "║"
+            << cursor(log_vpos+i+1, log_hpos+79)
+            << "║";
+    }
+    std::cout
+        << cursor(log_vpos+log_hgt+1, log_hpos-2)
+        << "╚"
+        << repeat(80, "═")
+        << "╝" ;
+}
+
 void log_redraw () {
     int L = log_vpos, C = log_hpos ;
     log_clear() ;
@@ -500,6 +529,7 @@ void log_redraw () {
             << cursor(L-i+(int)log_hist.size(), C)
             << log_hist[i] ;
     }
+    log_draw_rect() ;
     prompt_make() ;
 }
 
@@ -1558,6 +1588,7 @@ int main () {
 
     ls_map_read() ;
     map_choose(0) ;
+    log_draw_rect() ;
 
     do {
         prompt_make() ;
