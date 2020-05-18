@@ -127,20 +127,20 @@ or read LANGUAGE.md
 Root help
 
 Syntax:
-    | .
+    | $y.$
         reset all settings
-    | #
+    | $y#$
         hash new name and create file
-    | '{str}
-        use {str} as name
-    | {int}
-        open {int}'th settings file
-    | ls
-    | ls {int}
+    | $y'$$r{str}$
+        use $r{str}$ as name
+    | $r{int}$
+        open $r{int}$'th settings file
+    | $yls$
+    | $yls$ $r{int}$
         show all files already created
-        (page {int}, default 0)
+        (page $r{int}$, default 0)
 
 For more information:
-cmd> scope ?
+cmd> $yscope ?$
 or read LANGUAGE.md
 <END>

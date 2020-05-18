@@ -196,6 +196,7 @@ void prompt_clear () {
 void view_clear () {
     std::cout
         << PLAIN
+        << BLACK
         << cursor(view_vpos-1, view_hpos-2)
         << ULCORNER
         << repeat(view_wth+2, HBOX)
@@ -211,7 +212,8 @@ void view_clear () {
         << cursor(view_vpos+view_hgt-1, view_hpos-2)
         << DLCORNER
         << repeat(view_wth+2, HBOX)
-        << DRCORNER ;
+        << DRCORNER
+        << PLAIN ;
 }
 
 void resol_set (double resol) {
@@ -518,6 +520,7 @@ std::string msg_header(msg_log m) {
 void log_draw_rect () {
     std::cout
         << PLAIN
+        << BLACK
         << cursor(log_vpos, log_hpos-2)
         << ULCORNER
         << repeat(80, HBOX)
@@ -533,7 +536,8 @@ void log_draw_rect () {
         << cursor(log_vpos+log_hgt+1, log_hpos-2)
         << DLCORNER
         << repeat(80, HBOX)
-        << DRCORNER ;
+        << DRCORNER
+        << PLAIN ;
 }
 
 void log_redraw () {
@@ -881,9 +885,28 @@ void help_print (std::string indic, std::string term) {
         } else if (printing && line == term) {
             return ;
         } else if (printing) {
-            std::cout
-                << cursor(view_vpos+cnt+2, view_hpos+2)
-                << line ;
+            std::cout << cursor(view_vpos+cnt+2, view_hpos+2) ;
+            bool color = false ;
+            for (int i = 0; i < line.length(); i++) {
+                if (line[i] == '$') {
+                    if (!color) {
+                        switch (line[++i]) {
+                            case 'g': std::cout << GREEN ; break ;
+                            case 'r': std::cout << RED ; break ;
+                            case 'y': std::cout << YELLOW ; break ;
+                            case 'b': std::cout << BLUE ; break ;
+                            case 'k': std::cout << BLACK ; break ;
+                        }
+                        color = true ;
+                    } else {
+                        color = false ;
+                        std::cout << PLAIN ;
+                    }
+                } else {
+                    std::cout << line[i] ;
+                }
+            }
+            std::cout << PLAIN ;
             cnt++ ;
         }
     }
