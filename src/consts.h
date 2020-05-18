@@ -4,8 +4,8 @@
 * CHANGE HERE                   *
 * If your terminal is too small *
 *********************************/
-static const int view_hgt = 140 ;
-static const int view_wth = 160 ;
+static const int view_hgt = 138 ;
+static const int view_wth = 236 ;
 /********************************/
 
 

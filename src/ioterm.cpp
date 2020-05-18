@@ -29,10 +29,9 @@ void refresh () {
 void log_clear () {
     std::cout << PLAIN ;
     for (int i = 0; i < view_hgt; i++) {
-        std::cout << cursor(log_vpos+i, log_hpos) ;
-        for (int j = 0; j < 80; j++) {
-            std::cout << ' ' ;
-        }
+        std::cout
+            << cursor(log_vpos+i, log_hpos)
+            << std::string(80, ' ') ;
     }
 }
 
