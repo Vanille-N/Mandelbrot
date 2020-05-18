@@ -1,5 +1,5 @@
 *.ppm
-mandelbrot
+build/mandelbrot
 build/.depend
 .x.txt
 *.meta

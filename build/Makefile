@@ -3,7 +3,7 @@ appname := mandelbrot
 CXX := g++
 CXXFLAGS :=
 
-srcfiles := $(shell find . -name "*.cpp")
+srcfiles := $(shell find ../src -name "*.cpp")
 objects  := $(patsubst %.cpp, %.o, $(srcfiles))
 
 all: $(appname)
