@@ -87,7 +87,7 @@ enum msg_log {
     UNKCHR, NOSELEC, NOINDIC, NOFILE, PARSE, NOSUCHKW,
     RESELEC, REINDIC, LONGQUANT, LONGCMD, LONGNAME, FEXISTS, QUIT, RENAME,
     DEFQUANT, DONE, NEWSCOPE, LOADED, SAVED, NEWMAP, BUILT, EMPTY,
-    SIGLS, SIGRESET, SIGHELP, NEWFOCUS, EXCEPTION, FLIP,
+    SIGLS, SIGRESET, SIGHELP, NEWFOCUS, EXCEPTION, FLIP, NPORTABLE,
 } ;
 
 
@@ -430,7 +430,7 @@ std::string msg_header(msg_log m) {
                 << PLAIN ;
             break ;
         case RESELEC: case RENAME: case REINDIC: case LONGQUANT:
-        case LONGCMD: case LONGNAME: case FEXISTS: case QUIT:
+        case LONGCMD: case LONGNAME: case FEXISTS: case QUIT: case NPORTABLE:
             str
                 << YELLOW
                 << BOLD
@@ -472,6 +472,7 @@ std::string msg_header(msg_log m) {
         case LONGCMD:   str <<  " Command too long               " ; break ;
         case LONGNAME:  str <<  " String literal too long        " ; break ;
         case FEXISTS:   str <<  " File already exists            " ; break ;
+        case NPORTABLE: str <<  " Not a portable filename        " ; break ;
         case QUIT:      str <<  " Quit ?                         " ; break ;
         case DONE:      str <<  "                                 " ; break ;
         case DEFQUANT:  str <<  " Used default quantifier           " ; break ;
@@ -1033,6 +1034,34 @@ int int_parse (std::string command, int begin, int len) {
     return n ;
 }
 
+bool is_portable_char(char c) {
+    return '0' <= c && c <= '9'
+        || 'a' <= c && c <= 'z'
+        || 'A' <= c && c <= 'Z'
+        || c == '.'
+        || c == '-'
+        || c == '_' ;
+}
+
+std::string filename_sanitize (std::string fname) {
+    std::ostringstream str ;
+    int portable = 0 ;
+    for (char c: fname) {
+        if (portable == 2 || is_portable_char(c)) {
+            str << c ;
+        } else if (portable == 0) {
+            char ans = log_warn(NPORTABLE, "(" + std::string(1, c) + ") remove from name ? (y/n)") ;
+            if (ans == 'n') {
+                portable = 2 ;
+                str << c ;
+            } else {
+                portable = 1 ;
+            }
+        }
+    }
+    return str.str();
+}
+
 /* Read name at given location
  */
 std::string str_parse (int begin, int len) {
@@ -1044,7 +1073,7 @@ std::string str_parse (int begin, int len) {
             len = str_maxlen + 1 ;
         }
     }
-    return command.substr(begin+1, len-1) ;
+    return filename_sanitize(command.substr(begin+1, len-1)) ;
 }
 
 /* Split command line into usable commands
