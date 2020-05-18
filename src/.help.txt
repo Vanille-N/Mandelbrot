@@ -1,146 +1,158 @@
 This is the help file for the Mandelbrot creator.
 It is not recommended to modify it.
 
+For color support:
+$x...$   where `...` is the text that should be colored and `x` is one of:
+- b (B)         blue
+- r (R)         red
+- y (Y)         yellow
+- p (P)         purple
+- k (K)         black
+- e (E)         grey
+- g (G)         green
+
+`&` is an alias for `$$`
+
 <SCOPE>
-Printing help for keyword `scope`
+Printing help for keyword `$Bscope$`
 
 Universal scope:
-    | scope {scope}
-        change scope to {scope}
-    | scope .
-        reset scope (equivalent to `scope nil`)
-    | {scope} {{scope}_cmd}
-        temporary access to another scope
-    | ~
-        quit
+    | $Yscope &R{scope}
+        $pchange scope to &r{scope}
+    | $Yscope .
+        $preset scope (equivalent to `&yscope nil&p`)
+    | $R{scope} {{scope}_cmd}$
+        $ptemporary access to another scope
+    | $Y~$
+        $pquit
     |
-        do nothing
-    | ?
-        print help
-    | /
-        display next ls page
+        $pdo nothing
+    | $Y?$
+        $pprint help
+    | $Y/$
+        $pdisplay next ls page
 
 For more information:
-cmd> nil ?
-cmd> rec ?
-cmd> make ?
-cmd> map ?
-cmd> save ?
+cmd> $Ynil ?
+cmd> $Yrec ?
+cmd> $Ymake ?
+cmd> $Ymap ?
+cmd> $Ysave ?
 
-or read LANGUAGE.md
+or read $GLANGUAGE.md
 
 <END>
 
 <MAP>
-Printing help for keyword `map`
+Printing help for scope `$Bmap$`
 
-`map` is used to choose the color scheme to be used.
+`$bmap$` is used to choose the color scheme to be used.
 All color schemes are used in the same way:
 one point is colored with the corresponding RGB values modulus
 the color map length. Any number of loops may show depending on
 pixel resolution.
-Color 0 is to be used for points that do not diverge.
+Color `$y0$` is to be used for points that do not diverge.
 
 Syntax:
-    | .
-        reset settings for scope `map`
-        (equivalent to `0`)
-    | {int}
-        select map number {int}
-    | ls
-    | ls {int}
-        show {int}'th page, default is 0.
+    | $Y.$
+        $preset settings for scope `&bmap&p`
+        $p(equivalent to `&y0&p`)
+    | $R{int}
+        $pselect map number &r{int}
+    | $Yls
+    | $Yls &R{int}
+        $pshow &r{int}&p'th page, default is `&y0&p`
 
 For more information:
-cmd> scope ?
-or read LANGUAGE.md
+cmd> $Yscope ?
+or read $GLANGUAGE.md
 <END>
 
 <SAVE>
-Printing help for keyword `save`
+Printing help for scope `$Bsave$`
 
 To avoid having to recreate all settings, files can be created
 in order to restore environment to a previously set state.
 
 Syntax:
-    | #
-        hash new unique filename and save settings.
-    | '{str}
-        create file named {str}, and use it to save settings
-    | {int}
-        load {int}'th file
-    | ls
-    | ls {int}
-        show {int}'th page, default is 0
+    | $Y#
+        $phash new unique filename and save settings
+    | $Y'&R{str}
+        $pcreate file named &r{str}&p, and use it to save settings
+    | $R{int}
+        $pload &r{int}&p'th file
+    | $Yls
+    | $Yls &r{int}
+        $pshow &r{int}&p'th page, default is `&y0&p`
 
 For more information:
-cmd> scope ?
-or read LANGUAGE.md
+cmd> $Yscope ?
+or read $GLANGUAGE.md
 <END>
 
 <REC>
-Printing help for keyword `rec`
+Printing help for scope `$Brec$`
 
 Change view rectangle.
 
 Syntax:
-    | .
-        reset settings for `rec`
-    | ls
-        show current settings
-    | ({selector}*{indicator}*{quantifier}*)*
-        apply changes to the view
+    | $Y.
+        $preset settings for `&brec&p`
+    | $Yls
+        $pshow current settings
+    | $R({selector}*{indicator}*{quantifier}*)*
+        $papply changes to the view
 
 For more information:
-cmd> scope ?
-or read LANGUAGE.md
+cmd> $Yscope ?
+or read $GLANGUAGE.md
 <END>
 
 <MAKE>
-Printing help for keyword `make`
+Printing help for scope `$Bmake$`
 
 Create image of the Mandelbrot set.
 
 Syntax:
-    | .
-        reset `make` settings
-    | ls
-    | ls {int}
-        show all files already created
-        (page {int}, default 0)
-    | {int}
-        set resolution to {int}
-    | #
-        hash new name and create file
-    | '{str}
-        use {str} as name
-    | {int} #
-    | {int} '{str}
-        execute sequentially as above
+    | $Y.
+        $preset `&bmake&p` settings
+    | $Yls
+    | $Yls &R{int}
+        $pshow all files already created
+        $p(page &r{int}&p, default `&y0&p`)
+    | $R{int}
+        $pset resolution to &r{int}
+    | $Y#
+        $phash new name and create file
+    | $Y'&R{str}
+        $puse &r{str}&p as name
+    | $R{int} &Y#
+    | $R{int} &Y'&R{str}
+        $pexecute sequentially as above
 
 For more information:
-cmd> scope ?
-or read LANGUAGE.md
+cmd> $Yscope ?
+or read $GLANGUAGE.md
 <END>
 
 <NIL>
-Root help
+Root help (scope `$Bnil$`)
 
 Syntax:
-    | $y.$
-        reset all settings
-    | $y#$
-        hash new name and create file
-    | $y'$$r{str}$
-        use $r{str}$ as name
-    | $r{int}$
-        open $r{int}$'th settings file
-    | $yls$
-    | $yls$ $r{int}$
-        show all files already created
-        (page $r{int}$, default 0)
+    | $Y.$
+        $preset all settings
+    | $Y#
+        $phash new name and create file
+    | $Y'&R{str}
+        $puse &r{str}&p as name
+    | $R{int}
+        $popen &r{int}&p'th settings file
+    | $Yls
+    | $Yls$ $R{int}
+        $pshow all files already created
+        $p(page &r{int}&p, default &r0&p)
 
 For more information:
-cmd> $yscope ?$
-or read LANGUAGE.md
+cmd> $Yscope ?
+or read $GLANGUAGE.md
 <END>
