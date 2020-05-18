@@ -31,6 +31,8 @@ static const std::string RED       = "\033[31m" ;
 static const std::string GREEN     = "\033[32m" ;
 static const std::string YELLOW    = "\033[33m" ;
 static const std::string BLUE      = "\033[34m" ;
+static const std::string PURPLE    = "\033[35m" ;
+static const std::string GREY      = "\033[90m" ;
 static const std::string LGREEN    = "\033[102m" ;
 
 static const std::string ULCORNER = "╔" ;
@@ -888,7 +890,11 @@ void help_print (std::string indic, std::string term) {
             std::cout << cursor(view_vpos+cnt+2, view_hpos+2) ;
             bool color = false ;
             for (int i = 0; i < line.length(); i++) {
-                if (line[i] == '$') {
+                if (line[i] == '$' || line[i] == '&') {
+                    if (line[i] == '&') {
+                        color = false ;
+                        std::cout << PLAIN ;
+                    }
                     if (!color) {
                         switch (line[++i]) {
                             case 'g': std::cout << GREEN ; break ;
@@ -896,6 +902,15 @@ void help_print (std::string indic, std::string term) {
                             case 'y': std::cout << YELLOW ; break ;
                             case 'b': std::cout << BLUE ; break ;
                             case 'k': std::cout << BLACK ; break ;
+                            case 'p': std::cout << PURPLE ; break ;
+                            case 'e': std::cout << GREY ; break ;
+                            case 'G': std::cout << GREEN << BOLD ; break ;
+                            case 'R': std::cout << RED << BOLD ; break ;
+                            case 'Y': std::cout << YELLOW << BOLD ; break ;
+                            case 'B': std::cout << BLUE << BOLD ; break ;
+                            case 'K': std::cout << BLACK << BOLD ; break ;
+                            case 'P': std::cout << PURPLE << BOLD ; break ;
+                            case 'E': std::cout << GREY << BOLD ; break ;
                         }
                         color = true ;
                     } else {
@@ -1256,6 +1271,7 @@ int execute () {
                 switch (exec[idx+1]) {
                     case HELP:
                         scope_help_print() ;
+                        log_info(SIGHELP, "") ;
                         log_info(DONE, "Terminate") ;
                         goto end ;
                     case NIL: case REC: case MAP: case MAKE: case SAVE:
