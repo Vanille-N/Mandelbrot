@@ -22,6 +22,8 @@ char log_warn (msg_log w, std::string s) {
     log_redraw() ;
     char ans ;
     do {
+        prompt_clear() ;
+        prompt_make() ;
         scanf("%c", &ans) ;
     } while (ans != 'y' && ans != 'n') ;
     return ans ;
