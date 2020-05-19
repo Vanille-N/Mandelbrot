@@ -15,6 +15,8 @@
 #include "disp.h"
 #include "calc.h"
 
+int read_int (const char *);
+void assist_resize () ;
 
 int main () {
     // Build dictionnary
@@ -47,6 +49,7 @@ int main () {
     kw.link(EXIT, "~") ;
     kw.link(REDRAW, "!") ;
 
+        assist_resize() ;
     screen_clear() ;
 
     focus_adjust() ;
@@ -67,4 +70,36 @@ int main () {
 
     screen_clear() ;
     return 0 ;
+}
+
+int read_int (const char * cmd) {
+    char buf [4] ;
+    FILE * fp = popen(cmd, "r") ;
+    fgets(buf, 4, fp) ;
+    int ans = 0 ;
+    for (int i = 0; i < 4; i++) {
+        if ('0' <= buf[i] && buf[i] <= '9') {
+            ans = ans * 10 +  buf[i] - '0' ;
+        } else {
+            break ;
+        }
+    }
+    pclose(fp) ;
+    return ans ;
+}
+
+void assist_resize () {
+    int require_hgt = view_hgt / 2 + 8 ;
+    int require_wth = view_wth + 95 ;
+    int curr_hgt ;
+    int curr_wth ;
+    printf("\n\n") ;
+    do {
+        curr_hgt = read_int("tput lines") ;
+        curr_wth = read_int("tput cols") ;
+        printf("\033[3A\n") ;
+        printf("Current size : (%d, %d)\n", curr_hgt, curr_wth) ;
+        printf("Target       : (%d, %d)\n", require_hgt, require_wth) ;
+        printf("^C to abort, run again with option -s to ignore this warning") ;
+    } while(require_hgt > curr_hgt || require_wth > curr_wth) ;
 }
