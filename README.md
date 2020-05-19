@@ -5,7 +5,10 @@ C++ script focused on creating images of the Mandelbrot set using a language des
 ```diff
 ! NOTE
 This project relies heavily on ANSI escape codes for
-interactive rendering. Correct execution has not been tested
+interactive rendering.
+Truecolor support is necessary, as well as being
+able to reduce terminal font size.
+Correct execution has not been tested
 anywhere other than the default Terminal for Ubuntu 18.04+.
 ```
 
