@@ -1,11 +1,11 @@
 CXX = g++
-CXX_FLAGS = -Wfatal-errors -Wall -Wextra -Wpedantic -Wconversion -Wshadow
+CXXFLAGS = -Wfatal-errors -Wall -Wextra -Wpedantic -Wconversion -Wshadow
 
 BIN = mandelbrot
 BUILD_DIR = ./
 
 # List of all .cpp source files.
-CPP = $(wildcard ../src/*.cpp)
+CPPS = $(wildcard $(SRC)/*.cpp)
 
 # All .o files go to build dir.
 OBJ = $(CPP:../src/%.cpp=../src/obj/%.o)
@@ -15,7 +15,7 @@ DEP = $(OBJ:%.o=%.d)
 # Actual target of the binary - depends on all .o files.
 $(BIN) : $(OBJ)
 	mkdir -p $(@D)
-	$(CXX) $(CXX_FLAGS) $^ -o $@
+	$(CXX) $(CXXFLAGS) $^ -o $@
 
 # Include all .d files
 -include $(DEP)
@@ -25,7 +25,7 @@ $(BIN) : $(OBJ)
 # by calling `-include $(DEP)`.
 ../src/obj/%.o : ../src/%.cpp
 	mkdir -p $(@D)
-	$(CXX) $(CXX_FLAGS) -MMD -c $< -o $@
+	$(CXX) $(CXXFLAGS) -MMD -c $< -o $@
 
 .PHONY : clean
 clean :
