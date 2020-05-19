@@ -8,7 +8,7 @@ void focus_adjust () {
     double factor = (view_hi-view_lo) / (view_rt-view_lt) ;
     pic_hresol = pic_vresol / factor ;
     view_hdiv = (view_rt - view_lt) / view_wth ;
-    view_vdiv = (view_hi - view_lo) / view_hgt ;
+    view_vdiv = (view_hi - view_lo) / view_wth ;
 }
 
 rgb view_colorspread (int dv) {
