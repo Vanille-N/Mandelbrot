@@ -17,8 +17,9 @@
 
 int read_int (const char *);
 void assist_resize () ;
+bool streq (const char *, const char *) ;
 
-int main () {
+int main (int argc, char * argv []) {
     // Build dictionnary
     kw.link(SCOPE, "scope") ;
     kw.link(NIL, "nil") ;
@@ -49,7 +50,16 @@ int main () {
     kw.link(EXIT, "~") ;
     kw.link(REDRAW, "!") ;
 
+    bool s = false ;
+    for (int i = 1; i < argc; i++) {
+        if (streq(argv[i], "-s")) {
+            s = true ;
+        }
+    }
+    if (!s) {
         assist_resize() ;
+    }
+
     screen_clear() ;
 
     focus_adjust() ;
@@ -102,4 +112,10 @@ void assist_resize () {
         printf("Target       : (%d, %d)\n", require_hgt, require_wth) ;
         printf("^C to abort, run again with option -s to ignore this warning") ;
     } while(require_hgt > curr_hgt || require_wth > curr_wth) ;
+}
+
+bool streq (const char * a, const char * b) {
+    int i = 0 ;
+    while (a[i] != 0 && b[i] != 0 && a[i] == b[i]) i++ ;
+    return (a[i] == b[i]) ;
 }
