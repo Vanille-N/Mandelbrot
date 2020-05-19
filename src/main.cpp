@@ -45,6 +45,7 @@ int main () {
     kw.link(NUM, ":") ;
     kw.link(STR, "'") ;
     kw.link(EXIT, "~") ;
+    kw.link(REDRAW, "!") ;
 
     screen_clear() ;
 

@@ -344,6 +344,12 @@ int execute () {
                         goto keepls ;
                     }
                 }
+            case REDRAW:
+                screen_clear() ;
+                focus_adjust() ;
+                preview_redraw() ;
+                log_draw_rect() ;
+                goto end ;
             case ABORT:
                 goto keepls ;
         }

@@ -108,6 +108,7 @@ types_chr chr_type (char c) {
         case 'r': case 's': case 'v': case 'd':
             return KEYWORD ;
         case '?': case '#': case '/': case '.': case '~':
+        case '!':
             return SYMBOL ;
         case 'L': case 'R': case 'U': case 'D': case 'V':
         case 'H': case 'A':
