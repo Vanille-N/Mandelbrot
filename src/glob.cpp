@@ -32,3 +32,5 @@ std::string command ;
 
 int preview [view_hgt * view_wth] ;
 int diverge_min = 0 ;
+
+option allow_non_posix_filenames = OPT_INIT ;

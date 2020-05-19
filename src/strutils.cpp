@@ -41,17 +41,16 @@ bool is_portable_char(char c) {
 
 std::string filename_sanitize (std::string fname) {
     std::ostringstream str ;
-    int portable = 0 ;
     for (char c: fname) {
-        if (portable == 2 || is_portable_char(c)) {
+        if (allow_non_posix_filenames == OPT_ALLOW || is_portable_char(c)) {
             str << c ;
-        } else if (portable == 0) {
+        } else if (allow_non_posix_filenames == 0) {
             char ans = log_warn(NPORTABLE, "(" + std::string(1, c) + ") remove from name ? (y/n)") ;
             if (ans == 'n') {
-                portable = 2 ;
+                allow_non_posix_filenames = OPT_ALLOW ;
                 str << c ;
             } else {
-                portable = 1 ;
+                allow_non_posix_filenames = OPT_DENY ;
             }
         }
     }

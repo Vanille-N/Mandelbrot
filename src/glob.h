@@ -38,3 +38,5 @@ extern std::string command ;
 
 extern int preview [view_hgt * view_wth] ;
 extern int diverge_min ;
+
+extern option allow_non_posix_filenames ;

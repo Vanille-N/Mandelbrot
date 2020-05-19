@@ -25,6 +25,10 @@ enum types_chr {
     SYMBOL, UNKNOWN, BLANK, NUMERIC
 };
 
+enum option {
+    OPT_INIT, OPT_DENY, OPT_ALLOW,
+};
+
 struct slice {
     int beg ;
     int len ;
