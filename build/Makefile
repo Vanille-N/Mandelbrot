@@ -1,3 +1,13 @@
+# General-purpose C++ Makefile
+# Courtesy of Stack Overflow:
+# Makefile, header dependencies
+# https://stackoverflow.com/questions/2394609/makefile-header-dependencies
+# Answer by @Sophie
+# https://stackoverflow.com/a/30142139/10027774
+
+# Adapted by Vanille-N <neven.villani@gmail.com>
+# for https://github.com/Vanille-N/mandelbrot
+
 CXX = g++
 CXXFLAGS = -Wfatal-errors -Wall -Wextra -Wpedantic -Wconversion -Wshadow
 
