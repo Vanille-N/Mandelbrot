@@ -15,11 +15,16 @@ DEP = $(OBJ:%.o=%.d)
 
 # Actual target of the binary - depends on all .o files.
 $(BIN) : $(OBJ)
-	mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) $^ -o $@
+
+$(TARGET) :
+	mkdir -p $(TARGET)
 
 # Include all .d files
 -include $(DEP)
+
+# objs require only that target dir exists
+$(OBJ) : | $(TARGET)
 
 # Build target for every single object file.
 # The potential dependency on header files is covered
