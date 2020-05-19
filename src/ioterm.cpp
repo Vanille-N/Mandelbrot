@@ -39,7 +39,7 @@ void prompt_clear () {
     std::cout << PLAIN ;
     for (int i = 1; i < 5; i++) {
         std::cout << cursor(i, 1) ;
-        for (int j = 0; j < 90; j++) {
+        for (int j = 0; j < view_wth; j++) {
             putchar(' ') ;
         }
     }
