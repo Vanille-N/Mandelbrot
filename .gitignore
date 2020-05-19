@@ -1,7 +1,6 @@
 *.ppm
 build/mandelbrot
 build/.depend
-.x.txt
 *.meta
 *.save
 local-*

@@ -42,32 +42,35 @@ void log_info (msg_log i, std::string s) {
 
 void ls_save_read () {
     ls_text.clear() ;
-    system("ls -a .*.save 1>.x.txt 2>/dev/null") ;
-    std::ifstream x (".x.txt") ;
+    system("ls -a .*.save 1>.tmp 2>/dev/null") ;
+    std::ifstream x (".tmp") ;
     std::string line ;
     while (getline(x, line)) {
         ls_text.push_back(line) ;
     }
+    system("rm .tmp") ;
 }
 
 void ls_nil_read () {
     ls_text.clear() ;
-    system("ls -a .*.meta 1>.x.txt 2>/dev/null") ;
-    std::ifstream x (".x.txt") ;
+    system("ls -a .*.meta 1>.tmp 2>/dev/null") ;
+    std::ifstream x (".tmp") ;
     std::string line ;
     while (getline(x, line)) {
         ls_text.push_back(line) ;
     }
+    system("rm .tmp") ;
 }
 
 void ls_make_read () {
     ls_text.clear() ;
-    system("ls *.ppm 1>.x.txt 2>/dev/null") ;
-    std::ifstream x (".x.txt") ;
+    system("ls *.ppm 1>.tmp 2>/dev/null") ;
+    std::ifstream x (".tmp") ;
     std::string line ;
     while (getline(x, line)) {
         ls_text.push_back(line) ;
     }
+    system("rm .tmp") ;
 }
 
 void ls_map_read () {
