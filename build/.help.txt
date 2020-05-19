@@ -12,6 +12,7 @@ $x...$   where `...` is the text that should be colored and `x` is one of:
 - g (G)         green
 
 `&` is an alias for `$$`
+Everything that is outside of <XXXX> ... <END> will be ignored.
 
 <SCOPE>
 Printing help for keyword `$Bscope$`
@@ -25,6 +26,10 @@ Universal scope:
         $ptemporary access to another scope
     | $Y~$
         $pquit
+    | $Y~~
+        $pforce quit
+    | $Y!
+        $predraw interface
     |
         $pdo nothing
     | $Y?$
