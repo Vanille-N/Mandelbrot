@@ -104,6 +104,8 @@ universal :=
     | scope {scope}
     | {scope} {{scope}_cmd}
     | ~
+    | ~~
+    | !
     |
     | ?
     | ls
@@ -122,6 +124,9 @@ By specifying the name of the target scope, one can access any command.
 Quit (asks for y/n confirmation)
 
 It is possible to force quit without confirmation by entering `~~`.
+
+#### `!`
+If graphical problems occur (command was not fully erased, terminal was improperly resized, ...) it is possible to refresh the whole interface by simply entering `!`.
 
 #### ` `
 The empty command is always valid

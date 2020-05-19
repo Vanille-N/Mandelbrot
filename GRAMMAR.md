@@ -23,6 +23,8 @@ universal :=
     | scope {scope}
     | {scope} {{scope}_cmd}
     | ~
+    | ~~
+    | !
     |
     | ?
     | ls
