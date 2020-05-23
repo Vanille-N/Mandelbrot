@@ -106,7 +106,7 @@ bool is_num (char c) {
 
 types_chr chr_type (char c) {
     if ('a' <= c && c <= 'z') return KEYWORD ;
-    if ('0' <= c && c <= 'Z') return NUMERIC ;
+    if ('0' <= c && c <= '9') return NUMERIC ;
     switch (c) {
         case '?': case '#': case '/': case '.': case '~':
         case '!': case '=':
