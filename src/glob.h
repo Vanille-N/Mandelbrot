@@ -27,6 +27,10 @@ extern double view_lt ;
 extern double view_rt ;
 extern double view_hi ;
 extern double view_lo ;
+extern double old_lt ;
+extern double old_rt ;
+extern double old_hi ;
+extern double old_lo ;
 
 extern std::vector<std::string> ls_text ;
 extern std::vector<std::vector<rgb>> ls_colors ;

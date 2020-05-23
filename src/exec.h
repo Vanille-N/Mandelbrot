@@ -8,3 +8,5 @@
 #include "strutils.h"
 
 int execute () ;
+void save_zoom () ;
+void cancel_zoom () ;

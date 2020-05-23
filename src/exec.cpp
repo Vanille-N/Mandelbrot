@@ -246,7 +246,7 @@ int execute () {
                 act:
                 focus_adjust() ;
                 double new_lt = view_lt, new_rt = view_rt, new_hi = view_hi, new_lo = view_lo ;
-                double old_lt = view_lt, old_rt = view_rt, old_hi = view_hi, old_lo = view_lo ;
+                save_zoom() ;
                 if (chL.active && chL.indicator != -1) {
                     new_lt = calc_newfocus(LSIDE, chL.indicator, chL.quantifier) ;
                 }
@@ -259,10 +259,12 @@ int execute () {
                 if (chD.active && chD.indicator != -1) {
                     new_lo = calc_newfocus(DSIDE, chD.indicator, chD.quantifier) ;
                 }
+                bool flipped = false ;
                 if (new_lo > new_hi) {
                     log_info(FLIP, "Exchanged left/right bounds") ;
                     view_hi = new_lo ;
                     view_lo = new_hi ;
+                    flipped = true ;
                 } else {
                     view_hi = new_hi ;
                     view_lo = new_lo ;
@@ -271,17 +273,15 @@ int execute () {
                     log_info(FLIP, "Exchanged up/down bounds") ;
                     view_lt = new_rt ;
                     view_rt = new_rt ;
+                    flipped = true ;
                 } else {
                     view_lt = new_lt ;
                     view_rt = new_rt ;
                 }
                 focus_adjust() ;
                 preview_redraw() ;
-                if (log_warn(CANCEL, "(y/n)") == 'y') {
-                    view_hi = old_hi ;
-                    view_lo = old_lo ;
-                    view_lt = old_lt ;
-                    view_rt = old_rt ;
+                if (flipped && log_warn(CANCEL, "(y/n)") == 'y') {
+                    cancel_zoom() ;
                     focus_adjust() ;
                     preview_redraw() ;
                 }
@@ -289,6 +289,12 @@ int execute () {
                 goto end ;
                 }
             case NUM:
+            case CANCELZOOM:
+                cancel_zoom() ;
+                focus_adjust() ;
+                preview_redraw() ;
+                log_info(DONE, "Terminate");
+                goto end ;
                 switch (curr_scope) {
                     case MAP:
                         map_choose(exec[idx+1]) ;
@@ -368,4 +374,18 @@ int execute () {
     keepls:
     curr_scope = scope_restore ;
     return 1 ;
+}
+
+void save_zoom () {
+    old_hi = view_hi ;
+    old_lo = view_lo ;
+    old_lt = view_lt ;
+    old_rt = view_rt ;
+}
+
+void cancel_zoom () {
+    view_hi = old_hi ;
+    view_lo = old_lo ;
+    view_lt = old_lt ;
+    view_rt = old_rt ;
 }

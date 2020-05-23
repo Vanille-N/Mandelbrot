@@ -21,6 +21,10 @@ double view_lt = -2.5 ;
 double view_rt = .5 ;
 double view_hi = 1 ;
 double view_lo = -1 ;
+double old_lt = view_lt ;
+double old_rt = view_rt ;
+double old_hi = view_hi ;
+double old_lo = view_lo ;
 
 std::vector<std::string> ls_text ;
 std::vector<std::vector<rgb>> ls_colors ;
