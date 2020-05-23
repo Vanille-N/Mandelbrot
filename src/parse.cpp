@@ -33,7 +33,7 @@ void tokenize () {
             idx++ ;
         } else if (curr == UNKNOWN) {
             tokens.push_back({-1, -1}) ;
-            log_info(PARSE, "'" + command.substr(idx, 1) + "' not recognized") ;
+            log_info(UNKCHR, "'" + command.substr(idx, 1) + "' not recognized") ;
             break ;
         }
     }
@@ -56,9 +56,12 @@ void parse () {
     tokenize() ;
     for (int i = 0; i < (int)tokens.size(); i++) {
         if (tokens[i].beg == -1) {
-            log_err(UNKCHR, "") ;
             exec.push_back(ABORT) ;
-        } else if (command[tokens[i].beg] == '\'') {
+            return ;
+        }
+    }
+    for (int i = 0; i < (int)tokens.size(); i++) {
+        if (command[tokens[i].beg] == '\'') {
             auto name = str_parse(tokens[i].beg, tokens[i].len) ;
             if (name.length() == 0) {
                 log_err(PARSE, "Process aborted : no name specified") ;
