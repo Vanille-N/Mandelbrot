@@ -106,6 +106,7 @@ universal :=
     | ~
     | ~~
     | !
+    | =
     |
     | ?
     | ls
@@ -127,6 +128,9 @@ It is possible to force quit without confirmation by entering `~~`.
 
 #### `!`
 If graphical problems occur (command was not fully erased, terminal was improperly resized, ...) it is possible to refresh the whole interface by simply entering `!`.
+
+#### `=`
+Cancel last view modification (applicable to all changes done by the `rec` scope). Does not retain more than one change back: it is impossible to undo more than one zoom, and once undone there is no 'redo' option.
 
 #### ` `
 The empty command is always valid
