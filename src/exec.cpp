@@ -181,7 +181,9 @@ int execute () {
                 goto keepls ;
             case LSIDE: case RSIDE: case USIDE: case DSIDE: case HSIDE: case ASIDE:
             case VSIDE: case ZOOMIN: case ZOOMOUT: case LSHIFT: case RSHIFT: case USHIFT: case DSHIFT:
-                {
+            {
+                // New scope is necessary to prevent
+                // `error: jump to case label`
                 if (curr_scope != REC) {
                     log_err(PARSE, "View specifications not expected here") ;
                     goto end ;
@@ -287,7 +289,7 @@ int execute () {
                 }
                 log_info(DONE, "Terminate") ;
                 goto end ;
-                }
+            }
             case CANCELZOOM:
                 cancel_zoom() ;
                 focus_adjust() ;
