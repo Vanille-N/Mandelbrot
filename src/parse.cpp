@@ -105,11 +105,9 @@ bool is_num (char c) {
 }
 
 types_chr chr_type (char c) {
+    if ('a' <= c && c <= 'z') return KEYWORD ;
+    if ('0' <= c && c <= 'Z') return NUMERIC ;
     switch (c) {
-        case 'a': case 'c': case 'e': case 'i': case 'k':
-        case 'l': case 'm': case 'n': case 'o': case 'p':
-        case 'r': case 's': case 'v': case 'd':
-            return KEYWORD ;
         case '?': case '#': case '/': case '.': case '~':
         case '!':
             return SYMBOL ;
@@ -121,9 +119,6 @@ types_chr chr_type (char c) {
             return INDICATOR ;
         case '\'':
             return MODIFIER ;
-        case '0': case '1': case '2': case '3': case '4':
-        case '5': case '6': case '7': case '8': case '9':
-            return NUMERIC ;
         case ' ':
             return BLANK ;
         default:
