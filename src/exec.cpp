@@ -288,18 +288,18 @@ int execute () {
                 log_info(DONE, "Terminate") ;
                 goto end ;
                 }
-            case NUM:
             case CANCELZOOM:
                 cancel_zoom() ;
                 focus_adjust() ;
                 preview_redraw() ;
-                log_info(DONE, "Terminate");
+                log_info(DONE, "Cancelled last zoom");
                 goto end ;
+            case NUM:
                 switch (curr_scope) {
                     case MAP:
                         map_choose(exec[idx+1]) ;
                         scope_enter_action(MAP) ;
-                        log_info(DONE, "Terminate" ) ;
+                        log_info(DONE, "Changed map" ) ;
                         goto keepls ;
                     case MAKE:
                         if (resol_just_set) {

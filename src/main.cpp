@@ -49,6 +49,7 @@ int main (int argc, char * argv []) {
     kw.link(STR, "'") ;
     kw.link(EXIT, "~") ;
     kw.link(REDRAW, "!") ;
+    kw.link(CANCELZOOM, "=") ;
 
     bool s = false ;
     for (int i = 1; i < argc; i++) {

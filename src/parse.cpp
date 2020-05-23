@@ -109,7 +109,7 @@ types_chr chr_type (char c) {
     if ('0' <= c && c <= 'Z') return NUMERIC ;
     switch (c) {
         case '?': case '#': case '/': case '.': case '~':
-        case '!':
+        case '!': case '=':
             return SYMBOL ;
         case 'L': case 'R': case 'U': case 'D': case 'V':
         case 'H': case 'A':
