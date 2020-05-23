@@ -419,7 +419,7 @@ std::string msg_header(msg_log m) {
                 << "ERROR:"
                 << PLAIN ;
             break ;
-        case RESELEC: case RENAME: case REINDIC: case LONGQUANT:
+        case RESELEC: case RENAME: case REINDIC: case LONGQUANT: case CANCEL:
         case LONGCMD: case LONGNAME: case FEXISTS: case QUIT: case NPORTABLE:
             str
                 << YELLOW
@@ -448,35 +448,36 @@ std::string msg_header(msg_log m) {
             return "" ;
     }
     switch(m) {
-        case UNKCHR:    str <<  " Unknown character                " ; break ;
-        case NOSELEC:   str <<  " No selector specified            " ; break ;
-        case NOINDIC:   str <<  " No indicator specified           " ; break ;
-        case NOFILE:    str <<  " No such file                     " ; break ;
-        case PARSE:     str <<  " Critical parsing error           " ; break ;
-        case EXCEPTION: str <<  " Runtime exception                " ; break ;
-        case NOSUCHKW:  str <<  " Not a valid keyword              " ; break ;
-        case RESELEC:   str <<  " Too many selectors specified   " ; break ;
-        case RENAME:    str <<  " Name already specified         " ; break ;
-        case REINDIC:   str <<  " Too many indicators specified  " ; break ;
-        case LONGQUANT: str <<  " Quantifier too long            " ; break ;
-        case LONGCMD:   str <<  " Command too long               " ; break ;
-        case LONGNAME:  str <<  " String literal too long        " ; break ;
-        case FEXISTS:   str <<  " File already exists            " ; break ;
-        case NPORTABLE: str <<  " Not a portable filename        " ; break ;
-        case QUIT:      str <<  " Quit ?                         " ; break ;
-        case DONE:      str <<  "                                 " ; break ;
-        case DEFQUANT:  str <<  " Used default quantifier           " ; break ;
-        case NEWSCOPE:  str <<  " Changed scope                     " ; break ;
-        case LOADED:    str <<  " Loaded save file                  " ; break ;
-        case SAVED:     str <<  " Current settings saved            " ; break ;
-        case NEWMAP:    str <<  " Changed color map                 " ; break ;
-        case BUILT:     str <<  " Done building image               " ; break ;
-        case EMPTY:     str <<  " Blank expression                  " ; break ;
-        case SIGLS:     str <<  " Asked for listing                 " ; break ;
-        case SIGRESET:  str <<  " Asked for reset                   " ; break ;
-        case SIGHELP:   str <<  " Asked for help                    " ; break ;
-        case NEWFOCUS:  str <<  " Adjusting focus                   " ; break ;
-        case FLIP:      str <<  " Focus was flipped                 " ; break ;
+        case UNKCHR:    str << " Unknown character                " ; break ;
+        case NOSELEC:   str << " No selector specified            " ; break ;
+        case NOINDIC:   str << " No indicator specified           " ; break ;
+        case NOFILE:    str << " No such file                     " ; break ;
+        case PARSE:     str << " Critical parsing error           " ; break ;
+        case EXCEPTION: str << " Runtime exception                " ; break ;
+        case NOSUCHKW:  str << " Not a valid keyword              " ; break ;
+        case RESELEC:   str << " Too many selectors specified   " ; break ;
+        case RENAME:    str << " Name already specified         " ; break ;
+        case REINDIC:   str << " Too many indicators specified  " ; break ;
+        case LONGQUANT: str << " Quantifier too long            " ; break ;
+        case LONGCMD:   str << " Command too long               " ; break ;
+        case LONGNAME:  str << " String literal too long        " ; break ;
+        case FEXISTS:   str << " File already exists            " ; break ;
+        case NPORTABLE: str << " Not a portable filename        " ; break ;
+        case CANCEL:    str << " Cancel zoom ?                  " ; break ;
+        case QUIT:      str << " Quit ?                         " ; break ;
+        case DONE:      str << "                                 " ; break ;
+        case DEFQUANT:  str << " Used default quantifier           " ; break ;
+        case NEWSCOPE:  str << " Changed scope                     " ; break ;
+        case LOADED:    str << " Loaded save file                  " ; break ;
+        case SAVED:     str << " Current settings saved            " ; break ;
+        case NEWMAP:    str << " Changed color map                 " ; break ;
+        case BUILT:     str << " Done building image               " ; break ;
+        case EMPTY:     str << " Blank expression                  " ; break ;
+        case SIGLS:     str << " Asked for listing                 " ; break ;
+        case SIGRESET:  str << " Asked for reset                   " ; break ;
+        case SIGHELP:   str << " Asked for help                    " ; break ;
+        case NEWFOCUS:  str << " Adjusting focus                   " ; break ;
+        case FLIP:      str << " Focus was flipped                 " ; break ;
     }
     return str.str() ;
 }

@@ -246,6 +246,7 @@ int execute () {
                 act:
                 focus_adjust() ;
                 double new_lt = view_lt, new_rt = view_rt, new_hi = view_hi, new_lo = view_lo ;
+                double old_lt = view_lt, old_rt = view_rt, old_hi = view_hi, old_lo = view_lo ;
                 if (chL.active && chL.indicator != -1) {
                     new_lt = calc_newfocus(LSIDE, chL.indicator, chL.quantifier) ;
                 }
@@ -276,6 +277,14 @@ int execute () {
                 }
                 focus_adjust() ;
                 preview_redraw() ;
+                if (log_warn(CANCEL, "(y/n)") == 'y') {
+                    view_hi = old_hi ;
+                    view_lo = old_lo ;
+                    view_lt = old_lt ;
+                    view_rt = old_rt ;
+                    focus_adjust() ;
+                    preview_redraw() ;
+                }
                 log_info(DONE, "Terminate") ;
                 goto end ;
                 }
