@@ -12,7 +12,7 @@ Correct execution has not been tested
 anywhere other than the default Terminal for Ubuntu 18.04+.
 ```
 
-It is recommended to use the terminal in full screen and reduce the font size for comfort.
+It is recommended to use the terminal in full screen and reduce the font size for comfort. A script running at the beginning of the execution and relying on `tput` will guide you to the right terminal size. It is possible to opt out of this by using the `-s` option.
 
 An alternative is to edit a few constants for preview size at the beginning of `src/consts.h`. Integrity of the graphical interface is not guaranteed.
 
