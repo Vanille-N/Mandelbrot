@@ -30,12 +30,14 @@ Universal scope:
         $pforce quit
     | $Y!
         $predraw interface
+    | $Y=
+        $pundo last zoom
     |
         $pdo nothing
     | $Y?$
-        $pprint help
+        $pprint help (scope-sensitive)
     | $Y/$
-        $pdisplay next ls page
+        $pdisplay next ls page (environment-sensitive)
 
 For more information:
 cmd> $Ynil ?
