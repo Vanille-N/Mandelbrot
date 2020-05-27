@@ -95,8 +95,10 @@ void ls_make_read () {
     x.open(".tmp") ;
     int i = 0 ;
     while (getline(x, line)) {
-        getline(x, line) ;
-        ls_text[i] += "     " + PLAIN + PURPLE + line ;
+        while (!('0' <= line[0] && line[0] <= '9')) {
+            getline(x, line) ;
+        }
+        ls_text[i++] += "     " + PLAIN + PURPLE + line ;
     }
     x.close() ;
     system("rm .tmp") ;
