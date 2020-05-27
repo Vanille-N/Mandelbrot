@@ -6,3 +6,4 @@ build/.depend
 local-*
 *.o
 *.d
+.x.txt
