@@ -53,12 +53,20 @@ void ls_save_read () {
 
 void ls_nil_read () {
     ls_text.clear() ;
-    system("ls -a .*.meta 1>.tmp 2>/dev/null") ;
+    system("ls .*.meta 1>.tmp 2>/dev/null") ;
     std::ifstream x (".tmp") ;
     std::string line ;
     while (getline(x, line)) {
         ls_text.push_back(line) ;
     }
+    x.close() ;
+    system("cat .*.meta 1>.tmp 2>/dev/null") ;
+    x.open(".tmp") ;
+    int i = 0 ;
+    while (getline(x, line)) {
+        ls_text[i++] += "     " + PLAIN + PURPLE + line ;
+    }
+    x.close() ;
     system("rm .tmp") ;
 }
 
