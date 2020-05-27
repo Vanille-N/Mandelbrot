@@ -90,6 +90,15 @@ void ls_make_read () {
     while (getline(x, line)) {
         ls_text.push_back(line) ;
     }
+    x.close() ;
+    system("head -n 2 *.ppm 1>.tmp 2>/dev/null") ;
+    x.open(".tmp") ;
+    int i = 0 ;
+    while (getline(x, line)) {
+        getline(x, line) ;
+        ls_text[i] += "     " + PLAIN + PURPLE + line ;
+    }
+    x.close() ;
     system("rm .tmp") ;
 }
 
