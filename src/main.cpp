@@ -83,6 +83,8 @@ int main (int argc, char * argv []) {
     return 0 ;
 }
 
+/* Read the output (integer only) of a shell command
+ */
 int read_int (const char * cmd) {
     char buf [4] ;
     FILE * fp = popen(cmd, "r") ;
@@ -99,6 +101,8 @@ int read_int (const char * cmd) {
     return ans ;
 }
 
+/* Main loop to check that the terminal is big enough for the display
+ */
 void assist_resize () {
     int require_hgt = view_hgt / 2 + 8 ;
     int require_wth = view_wth + 95 ;

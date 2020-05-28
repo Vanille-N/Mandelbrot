@@ -1,5 +1,21 @@
 #include "disp.h"
 
+/*
+ * The functions in this file are mostly responsible for input/output.
+ * They are built on the functions in ioterm, thus none of them has to resort
+ * to the use of the character \033, which on the other hand is abundant in
+ * ioterm.
+ * Functions in this file are at various levels of abstraction:
+ * log_err(), log_info, log_warn(), ... provide basic functions to display
+ * information, and many of the other functions use them.
+ * Although it may that that functions such as nil_help_print() or
+ * ls_make_read() belong in iofile, they actually interact with the terminal
+ * instead of the files themselves.
+ */
+
+/*
+ * log_???() prints to the log, possibly also interracts with the user.
+ */
 void log_err (msg_log e, std::string s) {
     hist_shift() ;
     std::string n = msg_header(e) + s ;
@@ -40,6 +56,11 @@ void log_info (msg_log i, std::string s) {
     log_redraw() ;
 }
 
+/*
+ * ls_???_read() lists all the files that need to be displayed
+ * Since recently, it also loads a sample of the contents to be shown
+ * next to the name
+ */
 void ls_save_read () {
     ls_text.clear() ;
     system("ls .*.save 1>.tmp 2>/dev/null") ;
@@ -122,7 +143,9 @@ void ls_map_read () {
     }
 }
 
-
+/*
+ * ls_???_print actually outputs the list previously loaded to the main area
+ */
 void ls_nil_print () {
     ls_scope = NIL ;
     view_clear() ;
@@ -362,6 +385,11 @@ void ls_map_print () {
     }
 }
 
+/*
+ * Show help with text formatting (colors + bold)
+ * Takes two strings as arguments, corresponding to the begin and end tags
+ * for the section that is of interest.
+ */
 void help_print (std::string indic, std::string term) {
     view_clear() ;
     std::ifstream helpf (".help.txt") ;
@@ -438,6 +466,9 @@ void nil_help_print () {
     help_print("<NIL>", "<END>") ;
 }
 
+/*
+ * Color text + short message to indicate the type of info on the log
+ */
 std::string msg_header(msg_log m) {
     std::ostringstream str ;
     switch(m) {
@@ -513,6 +544,11 @@ std::string msg_header(msg_log m) {
     return str.str() ;
 }
 
+/*
+ * Shift log by one to make room for the new stuff.
+ * Not a very efficient implementation, but the size of the log is fixed
+ * anyway...
+ */
 void hist_shift () {
     if (log_hist.size() <= log_hgt) return ;
     for (int i = 1; (long unsigned)i < log_hist.size(); i++) {
