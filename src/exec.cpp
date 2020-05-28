@@ -25,7 +25,7 @@ int execute () {
                     case NIL: case REC: case MAP: case MAKE: case SAVE:
                         log_info(NEWSCOPE, "Switching to " + kw[exec[idx+1]]) ;
                         curr_scope = exec[idx+1] ;
-                        log_info(DONE, "Terminate") ;
+                        log_info(DONE, "Permanently changed scope") ;
                         scope_enter_action(exec[idx+1]) ;
                         return 1 ;
                     case RESET:
@@ -140,14 +140,20 @@ int execute () {
                     case SAVE:
                         hash_name() ;
                         save_output() ;
+                        log_info(SAVED, "." + curr_name + ".save") ;
+                        log_info(DONE, "Terminate") ;
                         goto keepls ;
                     case MAKE:
                         hash_name() ;
                         image_make() ;
+                        log_info(BUILT, "." + curr_name + ".ppm") ;
+                        log_info(DONE, "Terminate") ;
                         goto keepls ;
                     case NIL:
                         hash_name() ;
                         meta_output() ;
+                        log_info(SAVED, "." + curr_name + ".meta") ;
+                        log_info(DONE, "Terminate") ;
                         goto keepls ;
                     default:
                         log_err(PARSE, kw[HASH] + " not expected in scope " + kw[curr_scope]) ;
