@@ -39,7 +39,7 @@ void tokenize () {
     }
 }
 
-/* Split command line into usable commands
+/* Split command line into usable cmd items
  */
 void parse () {
     exec.clear() ;
