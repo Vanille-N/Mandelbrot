@@ -11,6 +11,9 @@ double drand () {
     return (double)rand() / (double)RAND_MAX ;
 }
 
+/*
+ * This function contains all the actual logic related to the Mandelbrot set !
+ */
 int diverge (std::complex<double> c) {
     std::complex<double> z (0, 0) ;
     for (int i = 1; i <= diverge_iter; i++) {
@@ -36,6 +39,13 @@ std::vector<int> round (std::vector<double> orig) {
     return r ;
 }
 
+/*
+ * The two functions below are responsible for the loops around diverge()
+ * Only preview_redraw() can afford to store all results in a vector<vector>,
+ * and image_make() has to also manage the output in real time, as well as
+ * the loading indicator on the preview. These two differences explain why
+ * preview_redraw() is ~20loc while image_make() is ~90loc.
+ */
 void preview_redraw () {
     auto hspace = linspace(view_lt, view_rt, view_wth) ;
     auto vspace = linspace(view_hi, view_lo, view_hgt) ;
@@ -56,7 +66,6 @@ void preview_redraw () {
     view_clear() ;
     view_display() ;
 }
-
 
 void image_make () {
     focus_adjust() ;
