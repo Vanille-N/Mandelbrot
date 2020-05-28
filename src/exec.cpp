@@ -1,5 +1,19 @@
 #include "exec.h"
 
+/*
+ * This huge function takes the vector of tokens given by parse() and
+ * lex(), and interpretes it on the fly.
+ * There are a few gotos used, but they seems reasonable:
+ *     - they all refer to a tag that is after them, thus they can only
+ *       short-circuit the control flow at worst
+ *     - there are only three tags
+ *     - they are all nested-loop-breakers, that is one of them is used to
+ *       break out of a switch inside a finite loop, and the other two refer
+ *       to the same position +/- one operation to reset some setting.
+ * I consider this use of goto to be justified, and I guarantee that there is
+ * not a single use of the keyword goto in any other file of this project.
+ */
+
 int execute () {
     cmd scope_restore = (cmd)curr_scope ;
     int idx = 0 ;
