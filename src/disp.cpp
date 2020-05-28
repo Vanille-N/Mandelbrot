@@ -363,7 +363,7 @@ void ls_map_print () {
             << cursor(view_vpos+4+i, view_hpos+7) ;
         for (int j = 0; (long unsigned)j < ls_colors[id+i].size(); j++) {
             auto col = ls_colors[id+i][j] ;
-            printf("\033[38;2;%d;%d;%dm█", col.r, col.g, col.b) ;
+            col.display() ;
         }
     }
     if (i == 0) {
@@ -381,7 +381,7 @@ void ls_map_print () {
         << cursor(view_vpos+entry_nb+8, view_hpos+2) ;
     for (int j = 0; (long unsigned)j < curr_map.size(); j++) {
         auto col = curr_map[j] ;
-        printf("\033[38;2;%d;%d;%dm█", col.r, col.g, col.b) ;
+        col.display() ;
     }
 }
 

@@ -3,6 +3,7 @@
 /* All of these are low-level interactions with the terminal.
  * Although the project relies heavily on ANSI escape codes for color output,
  * I guarantee that \033[ appears nowhere outside of this file.
+ * (except one in main)
  */
 
 std::string cursor (int i, int j) {
@@ -148,4 +149,8 @@ void view_display () {
         }
     }
     std::cout << PLAIN ;
+}
+
+void rgb::display () {
+    printf("\033[38;2;%d;%d;%dm█", r, g, b) ;
 }

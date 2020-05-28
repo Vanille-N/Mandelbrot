@@ -13,7 +13,6 @@ struct rgb {
     int b ;
 
     void display () ;
-    void preview () ;
 };
 
 /*
