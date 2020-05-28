@@ -1,7 +1,6 @@
 #include "exec.h"
 
-/*
- * This huge function takes the vector of tokens given by parse() and
+/* This huge function takes the vector of tokens given by parse() and
  * lex(), and interpretes it on the fly.
  * There are a few gotos used, but they seems reasonable:
  *     - they all refer to a tag that is after them, thus they can only

@@ -1,7 +1,6 @@
 #include "disp.h"
 
-/*
- * The functions in this file are mostly responsible for input/output.
+/* The functions in this file are mostly responsible for input/output.
  * They are built on the functions in ioterm, thus none of them has to resort
  * to the use of the character \033, which on the other hand is abundant in
  * ioterm.
@@ -13,8 +12,7 @@
  * instead of the files themselves.
  */
 
-/*
- * log_???() prints to the log, possibly also interracts with the user.
+/* log_???() prints to the log, possibly also interracts with the user.
  */
 void log_err (msg_log e, std::string s) {
     hist_shift() ;
@@ -56,8 +54,7 @@ void log_info (msg_log i, std::string s) {
     log_redraw() ;
 }
 
-/*
- * ls_???_read() lists all the files that need to be displayed
+/* ls_???_read() lists all the files that need to be displayed
  * Since recently, it also loads a sample of the contents to be shown
  * next to the name
  */
@@ -143,8 +140,7 @@ void ls_map_read () {
     }
 }
 
-/*
- * ls_???_print actually outputs the list previously loaded to the main area
+/* ls_???_print actually outputs the list previously loaded to the main area
  */
 void ls_nil_print () {
     ls_scope = NIL ;
@@ -385,8 +381,7 @@ void ls_map_print () {
     }
 }
 
-/*
- * Show help with text formatting (colors + bold)
+/* Show help with text formatting (colors + bold)
  * Takes two strings as arguments, corresponding to the begin and end tags
  * for the section that is of interest.
  */
@@ -466,8 +461,7 @@ void nil_help_print () {
     help_print("<NIL>", "<END>") ;
 }
 
-/*
- * Color text + short message to indicate the type of info on the log
+/* Color text + short message to indicate the type of info on the log
  */
 std::string msg_header(msg_log m) {
     std::ostringstream str ;
@@ -544,8 +538,7 @@ std::string msg_header(msg_log m) {
     return str.str() ;
 }
 
-/*
- * Shift log by one to make room for the new stuff.
+/* Shift log by one to make room for the new stuff.
  * Not a very efficient implementation, but the size of the log is fixed
  * anyway...
  */

@@ -1,7 +1,6 @@
 #include "calc.h"
 
-/*
- * This file includes most of the actual computation relative to the
+/* This file includes most of the actual computation relative to the
  * Mandelbrot set.
  * I expect that if one wanted to adapt this project to some other object
  * on the complex plane, only this file would need significant changes.
@@ -11,8 +10,7 @@ double drand () {
     return (double)rand() / (double)RAND_MAX ;
 }
 
-/*
- * This function contains all the actual logic related to the Mandelbrot set !
+/* This function contains all the actual logic related to the Mandelbrot set !
  */
 int diverge (std::complex<double> c) {
     std::complex<double> z (0, 0) ;
@@ -39,8 +37,7 @@ std::vector<int> round (std::vector<double> orig) {
     return r ;
 }
 
-/*
- * The two functions below are responsible for the loops around diverge()
+/* The two functions below are responsible for the loops around diverge()
  * Only preview_redraw() can afford to store all results in a vector<vector>,
  * and image_make() has to also manage the output in real time, as well as
  * the loading indicator on the preview. These two differences explain why

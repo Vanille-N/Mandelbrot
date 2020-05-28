@@ -1,11 +1,9 @@
 #include "strutils.h"
 
-/*
- * A few string utilities
+/* A few string utilities
  */
 
-/*
- * Functions to generate a unique random name composed of a-zA-Z
+/* Functions to generate a unique random name composed of a-zA-Z
  */
 char random_chr () {
     if (rand() % 2) {
@@ -37,8 +35,7 @@ void hash_name () {
     } while(fexists(curr_name)) ;
 }
 
-/*
- * Functions to check that a name entered by the user is a valid filename
+/* Functions to check that a name entered by the user is a valid filename
  */
 bool is_portable_char(char c) {
     return ('0' <= c && c <= '9')
