@@ -1,5 +1,11 @@
 #include "glob.h"
 
+/* I know that global variables should generally be avoided, but the
+ * alternative was huge objects passed around between functions.
+ * While they certainly did make some bugs harder to track down, I quite
+ * appreciate having mostly functions that take few parameters.
+ */
+
 Assoc kw ;
 
 std::string curr_name = "NULL" ;

@@ -1,5 +1,9 @@
 #include "strutils.h"
 
+/*
+ * A few string utilities
+ */
+
 char random_chr () {
     if (rand() % 2) {
         return (char)('a' + rand()%26) ;

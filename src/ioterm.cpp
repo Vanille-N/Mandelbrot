@@ -1,5 +1,10 @@
 #include "ioterm.h"
 
+/* All of these are low-level interactions with the terminal.
+ * Although the project relies heavily on ANSI escape codes for color output,
+ * I guarantee that \033[ appears nowhere outside of this file.
+ */
+
 std::string cursor (int i, int j) {
     std::ostringstream str ;
     str

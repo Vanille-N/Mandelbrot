@@ -3,10 +3,6 @@
 #include <string>
 #include <unordered_map>
 
-/* Assoc class provides an easy two-way correspondance between user keywords
- * and internal cmd representation.
- */
-
 class Assoc {
 public:
     void link (int, std::string) ;

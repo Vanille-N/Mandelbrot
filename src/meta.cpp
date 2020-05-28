@@ -1,5 +1,9 @@
 #include "meta.h"
 
+/* A collection of functions that affect global meta-parameters
+ * (resolution, color map, ...)
+ */
+
 void resol_set (double resol) {
     pic_vresol = resol ;
 }

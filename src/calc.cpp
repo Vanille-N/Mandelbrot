@@ -1,5 +1,12 @@
 #include "calc.h"
 
+/*
+ * This file includes most of the actual computation relative to the
+ * Mandelbrot set.
+ * I expect that if one wanted to adapt this project to some other object
+ * on the complex plane, only this file would need significant changes.
+ */
+
 double drand () {
     return (double)rand() / (double)RAND_MAX ;
 }

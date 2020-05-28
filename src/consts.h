@@ -1,12 +1,13 @@
 #pragma once
 
-/*********************************
-* CHANGE HERE                   *
-* If your terminal is too small *
-*********************************/
+/*************************************
+* CHANGE HERE                        *
+* If your terminal is too small      *
+* (although that is not recommended) *
+**************************************/
 static const int view_hgt = 138 ;
 static const int view_wth = 236 ;
-/********************************/
+/*************************************/
 
 
 static const int num_maxlen = 7 ;

@@ -1,5 +1,12 @@
 #include "iofile.h"
 
+/* Read from and write to external settings (.save and .meta) files.
+ * Beware that the structure of these files is hardcoded:
+ * do not change save_output() (resp. meta_output()) without adjusting
+ * save_input() (resp. meta_input()), at the risk of a runtime error
+ * when trying to read an incompatible format.
+ */
+
 void save_output () {
     std::ofstream sv ("." + curr_name + ".save") ;
     sv

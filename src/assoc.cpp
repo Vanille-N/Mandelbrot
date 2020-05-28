@@ -1,5 +1,11 @@
 #include "assoc.h"
 
+/* Assoc class provides an easy two-way correspondance between user keywords
+ * and internal cmd representation.
+ * The [] operator is overloaded so that
+ * assoc[KW] == "kw" && assoc["kw"] == KW
+ */
+
 void Assoc::link (int num, std::string name) {
     str[num] = name ;
     id[name] = num ;
