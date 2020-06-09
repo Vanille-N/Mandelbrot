@@ -1,5 +1,7 @@
 # Mandelbrot
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A TUI written in C++ focused on creating images of the Mandelbrot set using a minimalist language designed for easy navigation and many tools for choosing color palettes, image dimensions, and other metaparameters.
 
 ```diff
