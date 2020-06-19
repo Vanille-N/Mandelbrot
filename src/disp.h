@@ -13,9 +13,9 @@
 void log_err (msg_log e, std::string s) ;
 char log_warn (msg_log, std::string) ;
 void log_info (msg_log, std::string) ;
-void ls_save_read () ;
-void ls_nil_read () ;
-void ls_make_read () ;
+void ls_save_read (bool) ;
+void ls_nil_read (bool) ;
+void ls_make_read (bool) ;
 void ls_map_read () ;
 void ls_nil_print () ;
 void ls_rec_print () ;

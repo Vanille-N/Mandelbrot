@@ -37,7 +37,7 @@ void save_input () {
 }
 
 void save_input (int id) {
-    ls_save_read() ;
+    ls_save_read(false) ;
     if ((long unsigned)id < ls_text.size()) {
         curr_name = ls_text[id] ;
     } else {
@@ -64,7 +64,7 @@ void meta_input () {
 }
 
 void meta_input (int id) {
-    ls_nil_read() ;
+    ls_nil_read(false) ;
     if ((long unsigned)id < ls_text.size()) {
         curr_name = ls_text[id] ;
     } else {

@@ -341,6 +341,7 @@ int execute () {
                         goto keepls ;
                     case NIL:
                         meta_input(exec[idx+1]) ;
+                        log_info(LOADED, curr_name) ;
                         log_info(DONE, "Terminate") ;
                         goto keepls ;
                     default:

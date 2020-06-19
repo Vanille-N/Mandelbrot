@@ -66,7 +66,6 @@ int main (int argc, char * argv []) {
     focus_adjust() ;
     preview_redraw() ;
 
-    ls_map_read() ;
     map_choose(0) ;
     log_draw_rect() ;
 

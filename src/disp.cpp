@@ -58,7 +58,7 @@ void log_info (msg_log i, std::string s) {
  * Since recently, it also loads a sample of the contents to be shown
  * next to the name
  */
-void ls_save_read () {
+void ls_save_read (bool info) {
     ls_text.clear() ;
     system("ls .*.save 1>.tmp 2>/dev/null") ;
     std::ifstream x (".tmp") ;
@@ -67,21 +67,23 @@ void ls_save_read () {
         ls_text.push_back(line) ;
     }
     x.close() ;
-    system("cat .*.save 1>.tmp 2>/dev/null") ;
-    x.open(".tmp") ;
-    int i = 0 ;
-    while (getline(x, line)) {
-        ls_text[i] += "     " + PLAIN + PURPLE + line ;
-        getline(x, line) ;
-        ls_text[i] += "     " + line ;
-        getline(x, line) ;
-        ls_text[i++] += " " + line ;
+    if (info) {
+        system("cat .*.save 1>.tmp 2>/dev/null") ;
+        x.open(".tmp") ;
+        int i = 0 ;
+        while (getline(x, line)) {
+            ls_text[i] += "     " + PLAIN + PURPLE + line ;
+            getline(x, line) ;
+            ls_text[i] += "     " + line ;
+            getline(x, line) ;
+            ls_text[i++] += " " + line ;
+        }
+        x.close() ;
     }
-    x.close() ;
     system("rm .tmp") ;
 }
 
-void ls_nil_read () {
+void ls_nil_read (bool info) {
     ls_text.clear() ;
     system("ls .*.meta 1>.tmp 2>/dev/null") ;
     std::ifstream x (".tmp") ;
@@ -90,17 +92,19 @@ void ls_nil_read () {
         ls_text.push_back(line) ;
     }
     x.close() ;
-    system("cat .*.meta 1>.tmp 2>/dev/null") ;
-    x.open(".tmp") ;
-    int i = 0 ;
-    while (getline(x, line)) {
-        ls_text[i++] += "     " + PLAIN + PURPLE + line ;
+    if (info) {
+        system("cat .*.meta 1>.tmp 2>/dev/null") ;
+        x.open(".tmp") ;
+        int i = 0 ;
+        while (getline(x, line)) {
+            ls_text[i++] += "     " + PLAIN + PURPLE + line ;
+        }
+        x.close() ;
     }
-    x.close() ;
     system("rm .tmp") ;
 }
 
-void ls_make_read () {
+void ls_make_read (bool info) {
     ls_text.clear() ;
     system("ls *.ppm 1>.tmp 2>/dev/null") ;
     std::ifstream x (".tmp") ;
@@ -109,16 +113,18 @@ void ls_make_read () {
         ls_text.push_back(line) ;
     }
     x.close() ;
-    system("head -n 2 *.ppm 1>.tmp 2>/dev/null") ;
-    x.open(".tmp") ;
-    int i = 0 ;
-    while (getline(x, line)) {
-        while (!('0' <= line[0] && line[0] <= '9')) {
-            getline(x, line) ;
+    if (info) {
+        system("head -n 2 *.ppm 1>.tmp 2>/dev/null") ;
+        x.open(".tmp") ;
+        int i = 0 ;
+        while (getline(x, line)) {
+            while (!('0' <= line[0] && line[0] <= '9')) {
+                getline(x, line) ;
+            }
+            ls_text[i++] += "     " + PLAIN + PURPLE + line ;
         }
-        ls_text[i++] += "     " + PLAIN + PURPLE + line ;
+        x.close() ;
     }
-    x.close() ;
     system("rm .tmp") ;
 }
 
@@ -145,7 +151,7 @@ void ls_map_read () {
 void ls_nil_print () {
     ls_scope = NIL ;
     view_clear() ;
-    ls_nil_read() ;
+    ls_nil_read(true) ;
     int id = curr_lspage * entry_nb ;
     std::cout
         << PLAIN
@@ -184,7 +190,7 @@ void ls_nil_print () {
 void ls_save_print () {
     ls_scope = SAVE ;
     view_clear() ;
-    ls_save_read() ;
+    ls_save_read(true) ;
     int id = curr_lspage * entry_nb ;
     std::cout
         << PLAIN
@@ -269,7 +275,7 @@ void ls_rec_print () {
 void ls_make_print () {
     ls_scope = MAKE ;
     view_clear() ;
-    ls_make_read() ;
+    ls_make_read(true) ;
     int id = curr_lspage * entry_nb ;
     std::cout
         << PLAIN
